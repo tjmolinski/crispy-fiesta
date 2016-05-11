@@ -34,6 +34,7 @@ class Player extends FlxSprite
 	private var ladderX:Float;
 
 	public var fallingThrough:Bool = false;
+	public var fallThroughObj:FlxObject = null;
 	
 	override public function new(X:Float, Y:Float, _bullets:FlxTypedGroup<Bullet>) 
 	{

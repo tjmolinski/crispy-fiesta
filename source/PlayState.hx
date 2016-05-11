@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
+import flixel.FlxBasic;
 import flixel.FlxState;
 import flixel.addons.editors.ogmo.FlxOgmoLoader;
 import flixel.addons.effects.chainable.FlxEffectSprite;
@@ -24,6 +25,7 @@ class PlayState extends FlxState
 	private var player:Player;
 	private var message:FlxTypeText;
 	private var ladders:FlxGroup;
+	private var enemies:FlxGroup;
 	private var movingPlatforms:FlxGroup;
 	private var bullets:FlxTypedGroup<Bullet>;
 	
@@ -42,12 +44,7 @@ class PlayState extends FlxState
 	override public function create():Void
 	{
 		FlxG.camera.bgColor = 0xff333333;
-		
-		ladders = new FlxGroup();
-		add(ladders);
-		movingPlatforms = new FlxGroup();
-		add(movingPlatforms);
-		
+				
 		_map = new FlxOgmoLoader("assets/data/test_level.oel");
 		_mWalls = _map.loadTilemap("assets/images/level_tiles.png", 8, 8, "tiles");
 		_mWalls.setTileProperties(0, FlxObject.NONE);
@@ -82,6 +79,13 @@ class PlayState extends FlxState
 		bullets = new FlxTypedGroup<Bullet>(100);
 		add(bullets);
 		
+		enemies = new FlxGroup();
+		add(enemies);
+		ladders = new FlxGroup();
+		add(ladders);
+		movingPlatforms = new FlxGroup();
+		add(movingPlatforms);
+		
 		_map.loadEntities(function(type:String, data:Xml) {
 			var posX = Std.parseFloat(data.get("x"));
 			var posY = Std.parseFloat(data.get("y"));
@@ -99,6 +103,8 @@ class PlayState extends FlxState
 					var moveX : Float = Std.parseFloat(data.get("xMove"));
 					var moveY : Float = Std.parseFloat(data.get("yMove"));
 					movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
+				case "basicEnemy":
+					enemies.add(new BasicEnemy(posX, posY, data.get("walkLeft") == "True", _mWalls));
 					
 			}
 		});
@@ -110,12 +116,14 @@ class PlayState extends FlxState
 		//_glitch = new FlxGlitchEffect(5, 3, 0.05);
 		//_effectSprite.effects = [_trail, _glitch];
 		
+		var levelBounds = _mWalls.getBounds();
+		
 		shadowCanvas = new FlxSprite();
 		shadowCanvas.blend = BlendMode.MULTIPLY;
-		shadowCanvas.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT, true);
+		shadowCanvas.makeGraphic(cast(levelBounds.right-levelBounds.left, Int), cast(levelBounds.bottom-levelBounds.top, Int), FlxColor.TRANSPARENT, true);
 		add(shadowCanvas);
 		shadowOverlay = new FlxSprite();
-		shadowOverlay.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT, true);
+		shadowOverlay.makeGraphic(cast(levelBounds.right-levelBounds.left, Int), cast(levelBounds.bottom-levelBounds.top, Int), FlxColor.TRANSPARENT, true);
 		shadowOverlay.blend = BlendMode.MULTIPLY;
 		add(shadowOverlay);
 		
@@ -126,27 +134,27 @@ class PlayState extends FlxState
 			message.showCursor = false;
 		});*/
 		
-		FlxG.camera.target = player;
-		// FlxG.camera.style = FlxCameraFollowStyle.PLATFORMER;
-		FlxG.camera.maxScrollX = 640;
-		FlxG.camera.minScrollX = -100;
-		FlxG.camera.maxScrollY = 480;
-		FlxG.camera.minScrollY = 0;
+		FlxG.camera.follow(player, FlxCameraFollowStyle.PLATFORMER, 1);
+		FlxG.camera.maxScrollX = levelBounds.right;
+		FlxG.camera.minScrollX = levelBounds.left;
+		FlxG.camera.maxScrollY = levelBounds.bottom;
+		FlxG.camera.minScrollY = levelBounds.top;
 
 		super.create();
 	}
 
 	private function handleFallThrough(Tile:FlxObject, Object:FlxObject):Void
 	{
+		if (Object != player) {
+			return;
+		}
+		
+		var _pl = cast(Object, Player);
+		
 		if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([SPACE]))
 		{
-			cast(Object, Player).fallingThrough = true;
-			Tile.allowCollisions = FlxObject.NONE;
-		}
-		else if (Object.y >= Tile.y)
-		{
-			cast(Object, Player).fallingThrough = false;
-			Tile.allowCollisions = FlxObject.UP;
+			_pl.fallThroughObj = Tile;
+			_pl.fallingThrough = true;
 		}
 	}
 
@@ -171,9 +179,8 @@ class PlayState extends FlxState
 		});
 		
 		var onLadder = false;
-		FlxG.overlap(player, ladders, function(player:Player, obj:Ladder) 
-		{
-		}, function(player:Player, obj:Ladder)
+		FlxG.overlap(player, ladders, function(player:Player, obj:Ladder) {}, 
+		function(player:Player, obj:Ladder)
 		{
 			if (FlxG.keys.anyPressed([UP]) && (player.y+player.height) < obj.y && obj.isHead)
 			{
@@ -197,8 +204,26 @@ class PlayState extends FlxState
 				}
 			}
 		});
-		
-		_mWalls.overlapsWithCallback(player, FlxObject.separate);
+				
+		_mWalls.overlapsWithCallback(player, function(_tile: FlxObject, _player: FlxObject)
+		{
+			var _pl = cast(_player, Player);
+			
+			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _player.y)
+			{
+				_pl.fallThroughObj = null;
+				_pl.fallingThrough = false;
+			} 
+			else if (_pl.fallingThrough)
+			{
+				return false;
+			}
+			
+			return FlxObject.separate(_tile, _player);
+		});
+		enemies.forEach(function(enemy:FlxBasic) {
+			_mWalls.overlapsWithCallback(cast(enemy, FlxObject), FlxObject.separate);
+		});
 		
 		if (!onLadder) {
 			player.setLadderState(false);
