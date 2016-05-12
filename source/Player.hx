@@ -1,6 +1,7 @@
 package;
 import flixel.FlxSprite;
 import flixel.addons.text.FlxTypeText;
+import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxColor;
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -36,18 +37,25 @@ class Player extends FlxSprite
 	public var fallingThrough:Bool = false;
 	public var fallThroughObj:FlxObject = null;
 	
-	override public function new(X:Float, Y:Float, _bullets:FlxTypedGroup<Bullet>) 
+	private var halfWidth:Float;
+	private var halfHeight:Float;
+	
+	private var shootBtn:FlxKey = FlxKey.X;
+	private var jumpBtn:FlxKey = FlxKey.Z;
+	
+	override public function new(X:Int, Y:Int, _width:Float, _height:Float, _bullets:FlxTypedGroup<Bullet>) 
 	{
 		super(X, Y);
 		
 		bullets = _bullets;
 		
-		makeGraphic(8, 8, FlxColor.RED);
-		width = 8;
-		height = 8;
+		makeGraphic(cast(_width, Int), cast(_height, Int), FlxColor.RED);
 		drag.set(playerDrag, playerDrag);
 		acceleration.set(0, gravity);
 		maxVelocity.set(xMaxVel, yMaxVel);
+		
+		halfWidth = _width / 2;
+		halfHeight = _height / 2;
 	}
 
 	override public function update(elapsed:Float):Void
@@ -138,9 +146,9 @@ class Player extends FlxSprite
 			}
 		}
 		
-		if (FlxG.keys.anyJustPressed([Z]))
+		if (FlxG.keys.anyJustPressed([shootBtn]))
 		{
-			bullets.recycle(Bullet).fireBullet(x, y, direction);
+			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction);
 		}
 	}
 

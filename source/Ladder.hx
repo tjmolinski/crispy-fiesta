@@ -11,11 +11,11 @@ class Ladder extends FlxSprite
 {
 	public var isHead:Bool;
 	
-	override public function new(?X:Float=0, ?Y:Float=0, _isHead:Bool) 
+	override public function new(?X:Int=0, ?Y:Int=0, _isHead:Bool) 
 	{
 		super(X, Y);
 		
-		makeGraphic(8, 8, FlxColor.GREEN);
+		makeGraphic(32, 32, FlxColor.GREEN);
 		immovable = true;
 		isHead = _isHead;
 		if (isHead) {

@@ -24,7 +24,7 @@ class DoubleJumpingPlayer extends Player
 			return;
 		}
 
-		if (FlxG.keys.anyJustPressed([SPACE]))
+		if (FlxG.keys.anyJustPressed([jumpBtn]))
 		{
 			if (!singleJumped)
 			{

@@ -16,7 +16,7 @@ class MovingPlatform extends FlxSprite
 	
 	private var moveSpeed:Float = 50;
 	
-	override public function new(_x:Float, _y:Float, _width:Int, _height:Int, _moveX:Float, _moveY:Float) 
+	override public function new(_x:Int, _y:Int, _width:Int, _height:Int, _moveX:Float, _moveY:Float) 
 	{
 		super(_x, _y);
 		
@@ -27,27 +27,29 @@ class MovingPlatform extends FlxSprite
 		moveX = _moveX;
 		moveY = _moveY;
 		velocity.set(_moveX != 0 ? moveSpeed : 0, _moveY != 0 ? moveSpeed : 0);
+		updateHitbox();
+		allowCollisions = FlxObject.UP;
 	}
 	
 	override public function update(elapsed:Float):Void
 	{
-		super.update(elapsed);
-		
 		if (x < startX) {
 			x = startX;
-			velocity.x = moveX;
+			velocity.x = moveSpeed;
 		}
 		if (y < startY) {
 			y = startY;
-			velocity.y = moveY;
+			velocity.y = moveSpeed;
 		}
 		if (x > startX + moveX) {
 			x = startX + moveX;
-			velocity.x = -moveX;
+			velocity.x = -moveSpeed;
 		}
 		if (y > startY + moveY) {
 			y = startY + moveY;
-			velocity.y = -moveY;
+			velocity.y = -moveSpeed;
 		}
+		
+		super.update(elapsed);
 	}
 }

@@ -25,7 +25,7 @@ class LinearJumpingPlayer extends Player
 			return;
 		}
 		
-		if (FlxG.keys.anyJustPressed([SPACE]) && (!singleJumped || !doubleJumped))
+		if (FlxG.keys.anyJustPressed([jumpBtn]) && (!singleJumped || !doubleJumped))
 		{
 			linearJumped = true;
 			if (FlxG.keys.anyPressed([LEFT]))

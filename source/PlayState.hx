@@ -40,13 +40,15 @@ class PlayState extends FlxState
 	private var _map:FlxOgmoLoader;
 	public var _mWalls:FlxTilemap;
 
-	
+	public static var TILE_WIDTH:Int = 32;
+	public static var TILE_HEIGHT:Int = 32;
+
 	override public function create():Void
 	{
 		FlxG.camera.bgColor = 0xff333333;
 				
 		_map = new FlxOgmoLoader("assets/data/test_level.oel");
-		_mWalls = _map.loadTilemap("assets/images/level_tiles.png", 8, 8, "tiles");
+		_mWalls = _map.loadTilemap("assets/images/level_tiles.png", TILE_WIDTH, TILE_HEIGHT, "tiles");
 		_mWalls.setTileProperties(0, FlxObject.NONE);
 		_mWalls.setTileProperties(1, FlxObject.UP);
 		_mWalls.setTileProperties(2, FlxObject.RIGHT);
@@ -76,9 +78,6 @@ class PlayState extends FlxState
 		
 		add(_mWalls);
 		
-		bullets = new FlxTypedGroup<Bullet>(100);
-		add(bullets);
-		
 		enemies = new FlxGroup();
 		add(enemies);
 		ladders = new FlxGroup();
@@ -86,25 +85,28 @@ class PlayState extends FlxState
 		movingPlatforms = new FlxGroup();
 		add(movingPlatforms);
 		
+		bullets = new FlxTypedGroup<Bullet>(100);
+		add(bullets);
+		
 		_map.loadEntities(function(type:String, data:Xml) {
-			var posX = Std.parseFloat(data.get("x"));
-			var posY = Std.parseFloat(data.get("y"));
+			var posX = Std.parseInt(data.get("x"));
+			var posY = Std.parseInt(data.get("y"));
 			switch(type) {
 				case "player":
 					//player = new LinearJumpingPlayer(posX, posY, bullets);
 					//player = new VariableJumpingPlayer(posX, posY, bullets);
-					player = new DoubleJumpingPlayer(posX, posY, bullets);
+					player = new DoubleJumpingPlayer(posX, posY, TILE_WIDTH, TILE_HEIGHT, bullets);
 					add(player);
 				case "ladder":
 					ladders.add(new Ladder(posX, posY, data.get("isHead") == "True"));
 				case "movingPlatform":
 					var width : Int = Std.parseInt(data.get("width"));
 					var height : Int = Std.parseInt(data.get("height"));
-					var moveX : Float = Std.parseFloat(data.get("xMove"));
-					var moveY : Float = Std.parseFloat(data.get("yMove"));
+					var moveX : Float = Std.parseInt(data.get("xMove"));
+					var moveY : Float = Std.parseInt(data.get("yMove"));
 					movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
 				case "basicEnemy":
-					enemies.add(new BasicEnemy(posX, posY, data.get("walkLeft") == "True", _mWalls));
+					enemies.add(new BasicEnemy(posX, posY, TILE_WIDTH, TILE_HEIGHT, data.get("walkLeft") == "True", _mWalls));
 					
 			}
 		});
@@ -117,13 +119,14 @@ class PlayState extends FlxState
 		//_effectSprite.effects = [_trail, _glitch];
 		
 		var levelBounds = _mWalls.getBounds();
+		FlxG.worldBounds.set( levelBounds.x, levelBounds.y, levelBounds.width, levelBounds.height);
 		
 		shadowCanvas = new FlxSprite();
 		shadowCanvas.blend = BlendMode.MULTIPLY;
-		shadowCanvas.makeGraphic(cast(levelBounds.right-levelBounds.left, Int), cast(levelBounds.bottom-levelBounds.top, Int), FlxColor.TRANSPARENT, true);
+		shadowCanvas.makeGraphic(cast(levelBounds.width, Int), cast(levelBounds.height, Int), FlxColor.TRANSPARENT, true);
 		add(shadowCanvas);
 		shadowOverlay = new FlxSprite();
-		shadowOverlay.makeGraphic(cast(levelBounds.right-levelBounds.left, Int), cast(levelBounds.bottom-levelBounds.top, Int), FlxColor.TRANSPARENT, true);
+		shadowOverlay.makeGraphic(cast(levelBounds.width, Int), cast(levelBounds.height, Int), FlxColor.TRANSPARENT, true);
 		shadowOverlay.blend = BlendMode.MULTIPLY;
 		add(shadowOverlay);
 		
@@ -166,16 +169,28 @@ class PlayState extends FlxState
 		//message.x = player.x - (message.width/2);
 		//message.y = player.y - 100;
 
-		FlxG.overlap(player, movingPlatforms, function(player:Player, obj:MovingPlatform)
+		FlxG.overlap(player, movingPlatforms, function(_pl:Player, obj:MovingPlatform)
 		{
-			if (player.isTouching(FlxObject.DOWN)) 
+			handleFallThrough(obj, _pl);
+			
+			if (_pl.isTouching(FlxObject.DOWN)) 
 			{
-				cast(player, Player).hitFloor();
+				_pl.hitFloor();
 			}
 
-		}, function(player:Player, obj:MovingPlatform){
-
-			return FlxObject.separate(obj, player);
+		}, function(_pl:Player, obj:MovingPlatform) {
+			
+			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.y)
+			{
+				_pl.fallThroughObj = null;
+				_pl.fallingThrough = false;
+			} 
+			else if (_pl.fallingThrough)
+			{
+				return false;
+			}
+			
+			return FlxObject.separate(player, obj);
 		});
 		
 		var onLadder = false;
@@ -209,7 +224,7 @@ class PlayState extends FlxState
 		{
 			var _pl = cast(_player, Player);
 			
-			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _player.y)
+			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.y)
 			{
 				_pl.fallThroughObj = null;
 				_pl.fallingThrough = false;

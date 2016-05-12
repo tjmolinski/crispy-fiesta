@@ -23,24 +23,30 @@ class BasicEnemy extends FlxSprite
 	
 	private var tileMap:FlxTilemap;
 	
-	override public function new(X:Float, Y:Float, _isWalkingLeft:Bool, _map:FlxTilemap) 
+	private var halfWidth:Float;
+	private var halfHeight:Float;
+	
+	override public function new(X:Float, Y:Float, _width:Float, _height:Float, _isWalkingLeft:Bool, _map:FlxTilemap) 
 	{
 		tileMap = _map;
 		
 		super(X, Y);
 		
-		makeGraphic(8, 8, FlxColor.PINK);
+		makeGraphic(cast(_width, Int), cast(_height, Int), FlxColor.PINK);
 		drag.set(playerDrag, playerDrag);
 		acceleration.set(0, gravity);
 		maxVelocity.set(xMaxVel, yMaxVel);
 		flipX = _isWalkingLeft;
+		
+		halfWidth = width / 2;
+		halfHeight = height / 2;
 	}
 	
 	override public function update(elapsed:Float):Void
 	{
 		//TODO: Make the sizing more dynamic
-		var xTile = Math.floor((x+4.0) / 8.0);
-		var yTile = Math.floor((y+4.0) / 8.0);
+		var xTile = Math.floor((x+halfWidth) / PlayState.TILE_WIDTH);
+		var yTile = Math.floor((y+halfHeight) / PlayState.TILE_HEIGHT);
 		var a = tileMap.getTile(xTile+(flipX?-1:1), yTile+1);
 		if (a == 0)
 		{

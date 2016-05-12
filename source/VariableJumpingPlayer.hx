@@ -30,7 +30,7 @@ class VariableJumpingPlayer extends Player
 		
 		if (FlxG.keys.anyPressed([SPACE]) && (!singleJumped || !doubleJumped) && !spaceJam)
 		{
-			if (FlxG.keys.anyJustPressed([SPACE]))
+			if (FlxG.keys.anyJustPressed([jumpBtn]))
 			{
 				setLadderState(false);
 				velocity.y = jumpSpeed;
@@ -48,7 +48,7 @@ class VariableJumpingPlayer extends Player
 				}
 			}
 		}
-		else if (FlxG.keys.anyJustReleased([SPACE]))
+		else if (FlxG.keys.anyJustReleased([jumpBtn]))
 		{
 			spaceJam = false;
 			holdJumpBuffer = 0.0;
