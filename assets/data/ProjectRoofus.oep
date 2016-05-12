@@ -29,8 +29,8 @@
     <LayerDefinition xsi:type="TileLayerDefinition">
       <Name>tiles</Name>
       <Grid>
-        <Width>32</Width>
-        <Height>32</Height>
+        <Width>16</Width>
+        <Height>16</Height>
       </Grid>
       <ScrollFactor>
         <X>1</X>
@@ -41,8 +41,8 @@
     <LayerDefinition xsi:type="EntityLayerDefinition">
       <Name>entities</Name>
       <Grid>
-        <Width>32</Width>
-        <Height>32</Height>
+        <Width>16</Width>
+        <Height>16</Height>
       </Grid>
       <ScrollFactor>
         <X>1</X>
@@ -55,8 +55,8 @@
       <Name>tiles</Name>
       <FilePath>..\images\level_tiles.png</FilePath>
       <TileSize>
-        <Width>32</Width>
-        <Height>32</Height>
+        <Width>16</Width>
+        <Height>16</Height>
       </TileSize>
       <TileSep>0</TileSep>
     </Tileset>
@@ -79,8 +79,8 @@
     </EntityDefinition>
     <EntityDefinition Name="ladder" Limit="-1" ResizableX="false" ResizableY="false" Rotatable="false" RotateIncrement="15">
       <Size>
-        <Width>32</Width>
-        <Height>32</Height>
+        <Width>16</Width>
+        <Height>16</Height>
       </Size>
       <Origin>
         <X>0</X>
@@ -96,8 +96,8 @@
     </EntityDefinition>
     <EntityDefinition Name="movingPlatform" Limit="-1" ResizableX="true" ResizableY="true" Rotatable="false" RotateIncrement="15">
       <Size>
-        <Width>32</Width>
-        <Height>32</Height>
+        <Width>16</Width>
+        <Height>16</Height>
       </Size>
       <Origin>
         <X>0</X>

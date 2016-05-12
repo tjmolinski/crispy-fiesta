@@ -40,8 +40,8 @@ class PlayState extends FlxState
 	private var _map:FlxOgmoLoader;
 	public var _mWalls:FlxTilemap;
 
-	public static var TILE_WIDTH:Int = 32;
-	public static var TILE_HEIGHT:Int = 32;
+	public static var TILE_WIDTH:Int = 16;
+	public static var TILE_HEIGHT:Int = 16;
 
 	override public function create():Void
 	{
@@ -95,7 +95,7 @@ class PlayState extends FlxState
 				case "player":
 					//player = new LinearJumpingPlayer(posX, posY, bullets);
 					//player = new VariableJumpingPlayer(posX, posY, bullets);
-					player = new DoubleJumpingPlayer(posX, posY, TILE_WIDTH, TILE_HEIGHT, bullets);
+					player = new DoubleJumpingPlayer(posX, posY, 32, 32, bullets);
 					add(player);
 				case "ladder":
 					ladders.add(new Ladder(posX, posY, data.get("isHead") == "True"));
@@ -106,7 +106,7 @@ class PlayState extends FlxState
 					var moveY : Float = Std.parseInt(data.get("yMove"));
 					movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
 				case "basicEnemy":
-					enemies.add(new BasicEnemy(posX, posY, TILE_WIDTH, TILE_HEIGHT, data.get("walkLeft") == "True", _mWalls));
+					enemies.add(new BasicEnemy(posX, posY, 32, 32, data.get("walkLeft") == "True", _mWalls));
 					
 			}
 		});
