@@ -106,9 +106,14 @@ class PlayState extends FlxState
 					var moveY : Float = Std.parseInt(data.get("yMove"));
 					movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
 				case "basicEnemy":
-					enemies.add(new BasicEnemy(posX, posY, 32, 32, data.get("walkLeft") == "True", _mWalls));
+					enemies.add(new BasicEnemy(posX, posY, 32, 32, data.get("walkLeft") == "True", _mWalls, bullets));
 					
 			}
+		});
+		
+		enemies.forEach(function(genEnemy:FlxBasic)
+		{
+			cast(genEnemy, BasicEnemy).setPlayerReference(player);
 		});
 		
 		// Effect Sprite
