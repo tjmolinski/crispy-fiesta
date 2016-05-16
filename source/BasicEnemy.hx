@@ -14,7 +14,7 @@ import flixel.addons.util.FlxFSM;
  * ...
  * @author TJ
  */
-class BasicEnemy extends FlxSprite 
+class BasicEnemy extends FlxSprite implements LivingThing
 {
 	
 	public var fsm:FlxFSM<BasicEnemy>;
@@ -34,6 +34,7 @@ class BasicEnemy extends FlxSprite
 	
 	public var playerRef:Player;
 	private var bullets:FlxTypedGroup<Bullet>;
+	public var nameType:String = "basic enemy";
 	
 	override public function new(X:Float, Y:Float, _width:Float, _height:Float, _isWalkingLeft:Bool, _map:FlxTilemap, _bullets:FlxTypedGroup<Bullet>) 
 	{
@@ -79,7 +80,7 @@ class BasicEnemy extends FlxSprite
 	
 	public function shootBullet():Void
 	{
-		bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, flipX ? 180 : 0);
+		bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, flipX ? 180 : 0, this);
 	}
 }
 

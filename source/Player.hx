@@ -11,7 +11,7 @@ import flixel.group.FlxGroup;
  * ...
  * @author TJ
  */
-class Player extends FlxSprite 
+class Player extends FlxSprite implements LivingThing
 {
 
 	private var runSpeed:Float = 1000;
@@ -42,6 +42,7 @@ class Player extends FlxSprite
 	
 	private var shootBtn:FlxKey = FlxKey.X;
 	private var jumpBtn:FlxKey = FlxKey.Z;
+	public var nameType:String = "player";
 	
 	override public function new(X:Int, Y:Int, _width:Float, _height:Float, _bullets:FlxTypedGroup<Bullet>) 
 	{
@@ -148,7 +149,7 @@ class Player extends FlxSprite
 		
 		if (FlxG.keys.anyJustPressed([shootBtn]))
 		{
-			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction);
+			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction, this);
 		}
 	}
 

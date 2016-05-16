@@ -28,6 +28,7 @@ class PlayState extends FlxState
 	private var enemies:FlxGroup;
 	private var movingPlatforms:FlxGroup;
 	private var bullets:FlxTypedGroup<Bullet>;
+	private var livingThings:FlxGroup;
 	
 	private var OVERLAY_COLOR = 0xdd000000;
 	private var shadowCanvas:FlxSprite;
@@ -78,6 +79,7 @@ class PlayState extends FlxState
 		
 		add(_mWalls);
 		
+		livingThings = new FlxGroup();
 		enemies = new FlxGroup();
 		add(enemies);
 		ladders = new FlxGroup();
@@ -97,6 +99,7 @@ class PlayState extends FlxState
 					//player = new VariableJumpingPlayer(posX, posY, bullets);
 					player = new DoubleJumpingPlayer(posX, posY, 32, 32, bullets);
 					add(player);
+					livingThings.add(player);
 				case "ladder":
 					ladders.add(new Ladder(posX, posY, data.get("isHead") == "True"));
 				case "movingPlatform":
@@ -106,7 +109,9 @@ class PlayState extends FlxState
 					var moveY : Float = Std.parseInt(data.get("yMove"));
 					movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
 				case "basicEnemy":
-					enemies.add(new BasicEnemy(posX, posY, 32, 32, data.get("walkLeft") == "True", _mWalls, bullets));
+					var enemy = new BasicEnemy(posX, posY, 32, 32, data.get("walkLeft") == "True", _mWalls, bullets);
+					enemies.add(enemy);
+					livingThings.add(enemy);
 					
 			}
 		});
@@ -174,6 +179,14 @@ class PlayState extends FlxState
 		//message.x = player.x - (message.width/2);
 		//message.y = player.y - 100;
 
+		FlxG.overlap(bullets, livingThings, function(bullet:Bullet, thing:Dynamic)
+		{
+			if (thing.nameType != bullet.owner.nameType)
+			{
+				trace("collision");
+			}
+		});
+		
 		FlxG.overlap(player, movingPlatforms, function(_pl:Player, obj:MovingPlatform)
 		{
 			handleFallThrough(obj, _pl);

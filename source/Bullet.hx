@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
@@ -8,13 +9,15 @@ import flixel.util.FlxColor;
  * ...
  * @author TJ
  */
-class Bullet extends FlxSprite 
+class Bullet extends FlxSprite implements LivingThing
 {
 	
 	private var bulletSpeed:Float = 250;
 	private var direction:Float = 0;
 	private var halfWidth:Float;
 	private var halfHeight:Float;
+	public var owner:LivingThing;
+	public var nameType:String = "bullet";
 
 	override public function new(?X:Float=0, ?Y:Float=0) 
 	{
@@ -43,10 +46,17 @@ class Bullet extends FlxSprite
 		super.update(elapsed);
 	}
 	
-	public function fireBullet(X:Float, Y:Float, dir:Float):Void
+	override public function kill():Void
+	{
+		owner = null;
+		super.kill();
+	}
+	
+	public function fireBullet(X:Float, Y:Float, dir:Float, _owner:LivingThing):Void
 	{
 		super.reset(X-halfWidth, Y-halfHeight);
 		direction = dir;
+		owner = _owner;
 	}
 	
 }
