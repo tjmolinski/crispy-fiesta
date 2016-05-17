@@ -9,10 +9,10 @@ import flixel.FlxG;
  */
 class VariableJumpingPlayer extends Player 
 {
-	private var spaceJam:Bool = false;
+	private var jumpJammer:Bool = false;
 	private var holdJumpBuffer:Float = 0.0;
 	private var holdJumpTime:Float = 0.1;
-	private var jumpHoldAdder:Float = -15;
+	private var jumpHoldAdder:Float = -10;
 	
 	override public function update(elapsed:Float):Void
 	{
@@ -28,7 +28,7 @@ class VariableJumpingPlayer extends Player
 			return;
 		}
 		
-		if (FlxG.keys.anyPressed([SPACE]) && (!singleJumped || !doubleJumped) && !spaceJam)
+		if (FlxG.keys.anyPressed([jumpBtn]) && (!singleJumped || !doubleJumped) && !jumpJammer)
 		{
 			if (FlxG.keys.anyJustPressed([jumpBtn]))
 			{
@@ -40,7 +40,7 @@ class VariableJumpingPlayer extends Player
 				velocity.y += jumpHoldAdder;
 				if (holdJumpBuffer > holdJumpTime)
 				{
-					spaceJam = true;
+					jumpJammer = true;
 				}
 				else
 				{
@@ -50,7 +50,7 @@ class VariableJumpingPlayer extends Player
 		}
 		else if (FlxG.keys.anyJustReleased([jumpBtn]))
 		{
-			spaceJam = false;
+			jumpJammer = false;
 			holdJumpBuffer = 0.0;
 			if (!singleJumped)
 			{

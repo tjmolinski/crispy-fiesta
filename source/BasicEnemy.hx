@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxBasic;
 import flixel.math.FlxPoint;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -17,7 +18,7 @@ import flixel.addons.util.FlxFSM;
 class BasicEnemy extends FlxSprite implements LivingThing
 {
 	
-	public var fsm:FlxFSM<BasicEnemy>;
+	private var fsm:FlxFSM<BasicEnemy>;
 
 	public var xMaxVel:Float = 20;
 	public var yMaxVel:Float = 500;
@@ -36,22 +37,17 @@ class BasicEnemy extends FlxSprite implements LivingThing
 	private var bullets:FlxTypedGroup<Bullet>;
 	public var nameType:String = "basic enemy";
 	
-	override public function new(X:Float, Y:Float, _width:Float, _height:Float, _isWalkingLeft:Bool, _map:FlxTilemap, _bullets:FlxTypedGroup<Bullet>) 
+	override public function new() 
 	{
-		tileMap = _map;
+		super(0, 0);
 		
-		super(X, Y);
+		makeGraphic(32, 32, FlxColor.PINK);
+		halfWidth = 16;
+		halfHeight = 16;
 		
-		bullets = _bullets;
-		
-		makeGraphic(cast(_width, Int), cast(_height, Int), FlxColor.PINK);
 		drag.set(playerDrag, playerDrag);
 		acceleration.set(0, gravity);
 		maxVelocity.set(xMaxVel, yMaxVel);
-		flipX = _isWalkingLeft;
-		
-		halfWidth = width / 2;
-		halfHeight = height / 2;
 		
 		fsm = new FlxFSM<BasicEnemy>(this);
 		fsm.transitions
@@ -60,8 +56,23 @@ class BasicEnemy extends FlxSprite implements LivingThing
 			.start(Scout);
 	}
 	
+	public function spawn(X:Float, Y:Float, _isWalkingLeft:Bool, _map:FlxTilemap, _bullets:FlxTypedGroup<Bullet>): Void
+	{
+		super.reset(X, Y);
+		
+		bullets = _bullets;
+		flipX = _isWalkingLeft;
+		tileMap = _map;
+	}
+	
 	override public function update(elapsed:Float):Void
 	{
+		if (!alive)
+		{
+			exists = false;
+			return;
+		}
+		
 		fsm.update(elapsed);
 		super.update(elapsed);
 	}
@@ -82,9 +93,14 @@ class BasicEnemy extends FlxSprite implements LivingThing
 	{
 		bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, flipX ? 180 : 0, this);
 	}
+	
+	public function hitByBullet(bullet: Bullet):Void
+	{
+		kill();
+	}
 }
 
-class Conditions
+private class Conditions
 {
 	public static function seeEnemy(Owner:BasicEnemy):Bool
 	{
@@ -103,7 +119,7 @@ class Conditions
 	}
 }
 
-class Scout extends FlxFSMState<BasicEnemy>
+private class Scout extends FlxFSMState<BasicEnemy>
 {
 	override public function enter(owner:FlxSprite, fsm:FlxFSM<BasicEnemy>):Void 
 	{
@@ -128,7 +144,7 @@ class Scout extends FlxFSMState<BasicEnemy>
 	}
 }
 
-class Attack extends FlxFSMState<BasicEnemy>
+private class Attack extends FlxFSMState<BasicEnemy>
 {
 	private var ticker:Int = 0;
 	

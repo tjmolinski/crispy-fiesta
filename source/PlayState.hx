@@ -25,10 +25,9 @@ class PlayState extends FlxState
 	private var player:Player;
 	private var message:FlxTypeText;
 	private var ladders:FlxGroup;
-	private var enemies:FlxGroup;
 	private var movingPlatforms:FlxGroup;
+	private var enemies:FlxTypedGroup<BasicEnemy>;
 	private var bullets:FlxTypedGroup<Bullet>;
-	private var livingThings:FlxGroup;
 	
 	private var OVERLAY_COLOR = 0xdd000000;
 	private var shadowCanvas:FlxSprite;
@@ -79,13 +78,13 @@ class PlayState extends FlxState
 		
 		add(_mWalls);
 		
-		livingThings = new FlxGroup();
-		enemies = new FlxGroup();
-		add(enemies);
 		ladders = new FlxGroup();
 		add(ladders);
 		movingPlatforms = new FlxGroup();
 		add(movingPlatforms);
+		
+		enemies = new FlxTypedGroup<BasicEnemy>(100);
+		add(enemies);
 		
 		bullets = new FlxTypedGroup<Bullet>(100);
 		add(bullets);
@@ -95,11 +94,10 @@ class PlayState extends FlxState
 			var posY = Std.parseInt(data.get("y"));
 			switch(type) {
 				case "player":
-					//player = new LinearJumpingPlayer(posX, posY, bullets);
-					//player = new VariableJumpingPlayer(posX, posY, bullets);
-					player = new DoubleJumpingPlayer(posX, posY, 32, 32, bullets);
+					//player = new LinearJumpingPlayer(posX, posY, 32, 32, bullets, _mWalls);
+					player = new VariableJumpingPlayer(posX, posY, 32, 32, bullets, _mWalls);
+					//player = new DoubleJumpingPlayer(posX, posY, 32, 32, bullets, _mWalls);
 					add(player);
-					livingThings.add(player);
 				case "ladder":
 					ladders.add(new Ladder(posX, posY, data.get("isHead") == "True"));
 				case "movingPlatform":
@@ -109,9 +107,7 @@ class PlayState extends FlxState
 					var moveY : Float = Std.parseInt(data.get("yMove"));
 					movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
 				case "basicEnemy":
-					var enemy = new BasicEnemy(posX, posY, 32, 32, data.get("walkLeft") == "True", _mWalls, bullets);
-					enemies.add(enemy);
-					livingThings.add(enemy);
+					enemies.recycle(BasicEnemy).spawn(posX, posY, data.get("walkLeft") == "True", _mWalls, bullets);
 					
 			}
 		});
@@ -170,7 +166,7 @@ class PlayState extends FlxState
 			_pl.fallingThrough = true;
 		}
 	}
-
+	
 	override public function update(elapsed:Float):Void
 	{
 		processShadows();
@@ -178,14 +174,9 @@ class PlayState extends FlxState
 		
 		//message.x = player.x - (message.width/2);
 		//message.y = player.y - 100;
-
-		FlxG.overlap(bullets, livingThings, function(bullet:Bullet, thing:Dynamic)
-		{
-			if (thing.nameType != bullet.owner.nameType)
-			{
-				trace("collision");
-			}
-		});
+		
+		FlxG.overlap(bullets, player, bulletCollision);
+		FlxG.overlap(bullets, enemies, bulletCollision);
 		
 		FlxG.overlap(player, movingPlatforms, function(_pl:Player, obj:MovingPlatform)
 		{
@@ -263,6 +254,15 @@ class PlayState extends FlxState
 		}
 		
 		super.update(elapsed);
+	}
+	
+	private function bulletCollision(bullet:Bullet, thing:Dynamic):Void
+	{
+		if (thing.nameType != bullet.owner.nameType)
+		{
+			bullet.kill();
+			thing.hitByBullet(bullet);
+		}
 	}
 	
 	public function processShadows():Void

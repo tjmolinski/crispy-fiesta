@@ -9,7 +9,7 @@ import flixel.util.FlxColor;
  * ...
  * @author TJ
  */
-class Bullet extends FlxSprite implements LivingThing
+class Bullet extends FlxSprite
 {
 	
 	private var bulletSpeed:Float = 250;
@@ -17,7 +17,6 @@ class Bullet extends FlxSprite implements LivingThing
 	private var halfWidth:Float;
 	private var halfHeight:Float;
 	public var owner:LivingThing;
-	public var nameType:String = "bullet";
 
 	override public function new(?X:Float=0, ?Y:Float=0) 
 	{
@@ -33,6 +32,7 @@ class Bullet extends FlxSprite implements LivingThing
 		if (!alive)
 		{
 			exists = false;
+			return;
 		}
 		
 		if (!isOnScreen())
@@ -58,5 +58,4 @@ class Bullet extends FlxSprite implements LivingThing
 		direction = dir;
 		owner = _owner;
 	}
-	
 }
