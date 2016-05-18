@@ -56,13 +56,11 @@ class BasicEnemy extends FlxSprite implements LivingThing
 			.start(Scout);
 	}
 	
-	public function spawn(X:Float, Y:Float, _isWalkingLeft:Bool, _map:FlxTilemap, _bullets:FlxTypedGroup<Bullet>): Void
+	public function spawn(X:Float, Y:Float, _isWalkingLeft:Bool): Void
 	{
 		super.reset(X, Y);
 		
-		bullets = _bullets;
 		flipX = _isWalkingLeft;
-		tileMap = _map;
 	}
 	
 	override public function update(elapsed:Float):Void
@@ -84,9 +82,11 @@ class BasicEnemy extends FlxSprite implements LivingThing
 		super.destroy();
 	}
 	
-	public function setPlayerReference(player:Player):Void
+	public function setDependencies(player:Player, _map:FlxTilemap, _bullets:FlxTypedGroup<Bullet>):Void
 	{
 		playerRef = player;
+		bullets = _bullets;
+		tileMap = _map;
 	}
 	
 	public function shootBullet():Void
@@ -121,9 +121,9 @@ private class Conditions
 
 private class Scout extends FlxFSMState<BasicEnemy>
 {
-	override public function enter(owner:FlxSprite, fsm:FlxFSM<BasicEnemy>):Void 
+	override public function enter(owner:BasicEnemy, fsm:FlxFSM<BasicEnemy>):Void 
 	{
-		//Start animation here
+		super.enter(owner, fsm);
 	}
 	
 	override public function update(elapsed:Float, owner:BasicEnemy, fsm:FlxFSM<BasicEnemy>):Void 
@@ -141,6 +141,8 @@ private class Scout extends FlxFSMState<BasicEnemy>
 		}
 		
 		owner.velocity.x = owner.flipX ? -owner.runSpeed : owner.runSpeed;
+		
+		super.update(elapsed, owner, fsm);
 	}
 }
 
@@ -148,9 +150,9 @@ private class Attack extends FlxFSMState<BasicEnemy>
 {
 	private var ticker:Int = 0;
 	
-	override public function enter(owner:FlxSprite, fsm:FlxFSM<BasicEnemy>):Void 
+	override public function enter(owner:BasicEnemy, fsm:FlxFSM<BasicEnemy>):Void 
 	{
-		//Start animation here
+		super.enter(owner, fsm);
 	}
 	
 	override public function update(elapsed:Float, owner:BasicEnemy, fsm:FlxFSM<BasicEnemy>):Void 
@@ -159,5 +161,6 @@ private class Attack extends FlxFSMState<BasicEnemy>
 		{
 			owner.shootBullet();
 		}
+		super.update(elapsed, owner, fsm);
 	}
 }

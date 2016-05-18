@@ -11,8 +11,10 @@ class MenuState extends FlxState
 {	
 	override public function create():Void
 	{
-		var title:FlxText = new FlxText(0, 0, FlxG.width, "TEST", 20);
+		var title:FlxText = new FlxText(0, 0, FlxG.width, "TITLE GOES HERE", 20);
 		add(title);
+		var instructions:FlxText = new FlxText(0, FlxG.height * 0.5, FlxG.width, "Z TO START", 20);
+		add(instructions);
 		super.create();
 	}
 
@@ -20,7 +22,7 @@ class MenuState extends FlxState
 	{
 		super.update(elapsed);
 		
-		if (FlxG.keys.anyJustPressed([SHIFT]))
+		if (FlxG.keys.anyJustPressed([Z]))
 		{
 				FlxG.switchState(new PlayState());
 		}

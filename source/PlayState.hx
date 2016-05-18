@@ -17,11 +17,13 @@ import flixel.tile.FlxTilemap;
 import flixel.util.FlxColor;
 import openfl.display.BlendMode;
 import flixel.FlxCamera;
+import flixel.addons.util.FlxFSM;
 
 using flixel.util.FlxSpriteUtil;
 
-class PlayState extends FlxState
-{
+class PlayState extends FlxState {
+	
+	private var fsm:FlxFSM<PlayState>;
 	private var player:Player;
 	private var message:FlxTypeText;
 	private var ladders:FlxGroup;
@@ -39,14 +41,40 @@ class PlayState extends FlxState
 	
 	private var _map:FlxOgmoLoader;
 	public var _mWalls:FlxTilemap;
+	
+	public var currentState:PlayingStates;
 
 	public static var TILE_WIDTH:Int = 16;
 	public static var TILE_HEIGHT:Int = 16;
 
-	override public function create():Void
-	{
-		FlxG.camera.bgColor = 0xff333333;
-				
+	override public function create():Void {
+		createStateMachine();
+		createTileMap();
+		createEntities();
+		setupCamera();
+
+		super.create();
+	}
+	
+	override public function update(elapsed:Float):Void {
+		updateEffects(elapsed);
+		fsm.update(elapsed);
+		super.update(elapsed);
+	}
+	
+	private function createStateMachine():Void {
+		fsm = new FlxFSM<PlayState>(this);
+		fsm.transitions
+			.add(IntroState, GamingState, Conditions.isPlaying)
+			.add(GamingState, PausedState, Conditions.pressPause)
+			.add(PausedState, GamingState, Conditions.pressPause)
+			.add(GamingState, OutroState, Conditions.isOutro)
+			.start(IntroState);
+			
+		currentState = PlayingStates.INTRO;
+	}
+	
+	private function createTileMap():Void {	
 		_map = new FlxOgmoLoader("assets/data/test_level.oel");
 		_mWalls = _map.loadTilemap("assets/images/level_tiles.png", TILE_WIDTH, TILE_HEIGHT, "tiles");
 		_mWalls.setTileProperties(0, FlxObject.NONE);
@@ -77,9 +105,12 @@ class PlayState extends FlxState
 		_mWalls.setTileProperties(23, FlxObject.NONE);
 		
 		add(_mWalls);
-		
+	}
+	
+	private function createEntities():Void {
 		ladders = new FlxGroup();
 		add(ladders);
+		
 		movingPlatforms = new FlxGroup();
 		add(movingPlatforms);
 		
@@ -89,7 +120,8 @@ class PlayState extends FlxState
 		bullets = new FlxTypedGroup<Bullet>(100);
 		add(bullets);
 		
-		_map.loadEntities(function(type:String, data:Xml) {
+		_map.loadEntities(function(type:String, data:Xml)
+		{
 			var posX = Std.parseInt(data.get("x"));
 			var posY = Std.parseInt(data.get("y"));
 			switch(type) {
@@ -107,22 +139,33 @@ class PlayState extends FlxState
 					var moveY : Float = Std.parseInt(data.get("yMove"));
 					movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
 				case "basicEnemy":
-					enemies.recycle(BasicEnemy).spawn(posX, posY, data.get("walkLeft") == "True", _mWalls, bullets);
+					enemies.recycle(BasicEnemy).spawn(posX, posY, data.get("walkLeft") == "True");
 					
 			}
 		});
 		
-		enemies.forEach(function(genEnemy:FlxBasic)
-		{
-			cast(genEnemy, BasicEnemy).setPlayerReference(player);
+		//XXX: This is weird fix this in the future
+		enemies.forEach(function(genEnemy:FlxBasic) {
+			cast(genEnemy, BasicEnemy).setDependencies(player, _mWalls, bullets);
 		});
 		
-		// Effect Sprite
-		//add(_effectSprite = new FlxEffectSprite(player));
+		toggleEntitiesActive(false);
+	}
+		
+	private function setupCamera():Void {
+		/* Effect Sprite and Message Text
+		add(_effectSprite = new FlxEffectSprite(player));
 		// Effects
-		//_trail = new FlxTrailEffect(_effectSprite, 2, 0.5, 1);
-		//_glitch = new FlxGlitchEffect(5, 3, 0.05);
-		//_effectSprite.effects = [_trail, _glitch];
+		_trail = new FlxTrailEffect(_effectSprite, 2, 0.5, 1);
+		_glitch = new FlxGlitchEffect(5, 3, 0.05);
+		_effectSprite.effects = [_trail, _glitch];
+		
+		message = new FlxTypeText(player.x, player.y - 100, 200, "testing a message that tests the messaging test", 16, true);
+		add(message);
+		message.showCursor = true;
+		message.start(0.1, false, false, [ENTER], function() {
+			message.showCursor = false;
+		});*/
 		
 		var levelBounds = _mWalls.getBounds();
 		FlxG.worldBounds.set( levelBounds.x, levelBounds.y, levelBounds.width, levelBounds.height);
@@ -136,24 +179,16 @@ class PlayState extends FlxState
 		shadowOverlay.blend = BlendMode.MULTIPLY;
 		add(shadowOverlay);
 		
-		/*message = new FlxTypeText(player.x, player.y - 100, 200, "testing a message that tests the messaging test", 16, true);
-		add(message);
-		message.showCursor = true;
-		message.start(0.1, false, false, [ENTER], function() {
-			message.showCursor = false;
-		});*/
-		
 		FlxG.camera.follow(player, FlxCameraFollowStyle.PLATFORMER, 1);
 		FlxG.camera.maxScrollX = levelBounds.right;
 		FlxG.camera.minScrollX = levelBounds.left;
 		FlxG.camera.maxScrollY = levelBounds.bottom;
 		FlxG.camera.minScrollY = levelBounds.top;
-
-		super.create();
+		
+		FlxG.camera.bgColor = 0xff333333;
 	}
-
-	private function handleFallThrough(Tile:FlxObject, Object:FlxObject):Void
-	{
+	
+	private function handleFallThrough(Tile:FlxObject, Object:FlxObject):Void {
 		if (Object != player) {
 			return;
 		}
@@ -167,113 +202,20 @@ class PlayState extends FlxState
 		}
 	}
 	
-	override public function update(elapsed:Float):Void
-	{
-		processShadows();
-		//_effectSprite.setPosition(player.x, player.y);
-		
-		//message.x = player.x - (message.width/2);
-		//message.y = player.y - 100;
-		
-		FlxG.overlap(bullets, player, bulletCollision);
-		FlxG.overlap(bullets, enemies, bulletCollision);
-		
-		FlxG.overlap(player, movingPlatforms, function(_pl:Player, obj:MovingPlatform)
-		{
-			handleFallThrough(obj, _pl);
-			
-			if (_pl.isTouching(FlxObject.DOWN)) 
-			{
-				_pl.hitFloor();
-			}
-
-		}, function(_pl:Player, obj:MovingPlatform) {
-			
-			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.y)
-			{
-				_pl.fallThroughObj = null;
-				_pl.fallingThrough = false;
-			} 
-			else if (_pl.fallingThrough)
-			{
-				return false;
-			}
-			
-			return FlxObject.separate(player, obj);
-		});
-		
-		var onLadder = false;
-		FlxG.overlap(player, ladders, function(player:Player, obj:Ladder) {}, 
-		function(player:Player, obj:Ladder)
-		{
-			if (FlxG.keys.anyPressed([UP]) && (player.y+player.height) < obj.y && obj.isHead)
-			{
-				return FlxObject.separate(player, obj);
-			}
-			else if (FlxG.keys.anyPressed([DOWN, UP]) || player.getLadderState()) 
-			{
-				player.setLadderState(true, obj.x);
-				onLadder = true;
-				return false;
-			}
-			else 
-			{
-				if (obj.isHead) 
-				{
-					return FlxObject.separate(player, obj);
-				}
-				else
-				{
-					return false;
-				}
-			}
-		});
-				
-		_mWalls.overlapsWithCallback(player, function(_tile: FlxObject, _player: FlxObject)
-		{
-			var _pl = cast(_player, Player);
-			
-			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.y)
-			{
-				_pl.fallThroughObj = null;
-				_pl.fallingThrough = false;
-			} 
-			else if (_pl.fallingThrough)
-			{
-				return false;
-			}
-			
-			return FlxObject.separate(_tile, _player);
-		});
-		enemies.forEach(function(enemy:FlxBasic) {
-			_mWalls.overlapsWithCallback(cast(enemy, FlxObject), FlxObject.separate);
-		});
-		
-		if (!onLadder) {
-			player.setLadderState(false);
-		}
-		
-		super.update(elapsed);
-	}
-	
-	private function bulletCollision(bullet:Bullet, thing:Dynamic):Void
-	{
-		if (thing.nameType != bullet.owner.nameType)
-		{
+	private function bulletCollision(bullet:Bullet, thing:Dynamic):Void {
+		if (thing.nameType != bullet.owner.nameType) {
 			bullet.kill();
 			thing.hitByBullet(bullet);
 		}
 	}
 	
-	public function processShadows():Void
-	{
+	private function processShadows():Void {
 		shadowCanvas.fill(FlxColor.TRANSPARENT);
 		shadowOverlay.fill(OVERLAY_COLOR);
 
 		var col = new FlxColor(0xffcc77ee);
 		var studderEffect = 1;
-		for (i in 0...5)
-		{
+		for (i in 0...5) {
 			col.alpha = 10 + (25 * i);
 			
 			var radius = 100 + (25 * i);
@@ -290,10 +232,8 @@ class PlayState extends FlxState
 		}
 
 		var bulletColor = new FlxColor(0xffffffcc);
-		bullets.forEachExists(function(bullet: Bullet)
-		{
-			for (i in 0...5)
-			{
+		bullets.forEachExists(function(bullet: Bullet) {
+			for (i in 0...5) {
 				bulletColor.alpha = 10 + (25 * i);
 
 				var radius = 5 + (2.5 * i);
@@ -305,4 +245,157 @@ class PlayState extends FlxState
 			}
 		});
 	}
+
+	private function updateEffects(elapsed):Void {
+		processShadows();
+		//_effectSprite.setPosition(player.x, player.y);
+		//message.x = player.x - (message.width/2);
+		//message.y = player.y - 100;
+	}
+	
+	public function updateGamingState(elapsed):Void {
+		FlxG.overlap(bullets, player, bulletCollision);
+		FlxG.overlap(bullets, enemies, bulletCollision);
+		
+		FlxG.overlap(player, movingPlatforms, function(_pl:Player, obj:MovingPlatform) {
+			handleFallThrough(obj, _pl);
+			
+			if (_pl.isTouching(FlxObject.DOWN)) {
+				_pl.hitFloor();
+			}
+
+		}, function(_pl:Player, obj:MovingPlatform) {
+			
+			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.y) {
+				_pl.fallThroughObj = null;
+				_pl.fallingThrough = false;
+			} else if (_pl.fallingThrough) {
+				return false;
+			}
+			
+			return FlxObject.separate(player, obj);
+		});
+		
+		var onLadder = false;
+		FlxG.overlap(player, ladders, function(player:Player, obj:Ladder) {}, 
+		function(player:Player, obj:Ladder) {
+			if (FlxG.keys.anyPressed([UP]) && (player.y+player.height) < obj.y && obj.isHead) {
+				return FlxObject.separate(player, obj);
+			} else if (FlxG.keys.anyPressed([DOWN, UP]) || player.getLadderState()) {
+				player.setLadderState(true, obj.x);
+				onLadder = true;
+				return false;
+			} else {
+				if (obj.isHead) 
+				{
+					return FlxObject.separate(player, obj);
+				}
+				else
+				{
+					return false;
+				}
+			}
+		});
+				
+		_mWalls.overlapsWithCallback(player, function(_tile: FlxObject, _player: FlxObject) {
+			var _pl = cast(_player, Player);
+			
+			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.y) {
+				_pl.fallThroughObj = null;
+				_pl.fallingThrough = false;
+			} else if (_pl.fallingThrough) {
+				return false;
+			}
+			
+			return FlxObject.separate(_tile, _player);
+		});
+		enemies.forEach(function(enemy:FlxBasic) {
+			_mWalls.overlapsWithCallback(cast(enemy, FlxObject), FlxObject.separate);
+		});
+		
+		if (!onLadder) {
+			player.setLadderState(false);
+		}
+		
+	}
+
+	public function toggleEntitiesActive(tf: Bool):Void {
+		ladders.active = tf;
+		movingPlatforms.active = tf;
+		enemies.active = tf;
+		bullets.active = tf;
+		player.active = tf;
+	}
+}
+
+private class Conditions {
+	public static function isIntro(owner:PlayState):Bool {
+		return owner.currentState == PlayingStates.INTRO;
+	}
+	public static function isPlaying(owner:PlayState):Bool {
+		return owner.currentState == PlayingStates.GAMING;
+	}
+	public static function isOutro(owner:PlayState):Bool {
+		return owner.currentState == PlayingStates.OUTRO;
+	}
+	public static function pressPause(owner:PlayState):Bool {
+		return FlxG.keys.anyJustPressed([ENTER]);
+	}
+}
+
+private class IntroState extends FlxFSMState<PlayState> {
+	private var ticks:Int = 0;
+	
+	override public function enter(owner:PlayState, fsm:FlxFSM<PlayState>):Void 
+	{
+		owner.toggleEntitiesActive(false);
+		super.enter(owner, fsm);
+	}
+	
+	override public function update(elapsed:Float, owner:PlayState, fsm:FlxFSM<PlayState>):Void 
+	{
+		if (ticks++ > 100) {
+			owner.currentState = GAMING;
+		}
+		
+		super.update(elapsed, owner, fsm);
+	}
+	
+	override public function exit(owner:PlayState):Void
+	{
+		owner.toggleEntitiesActive(true);
+		super.exit(owner);
+	}
+}
+
+private class GamingState extends FlxFSMState<PlayState> {
+	override public function update(elapsed:Float, owner:PlayState, fsm:FlxFSM<PlayState>):Void 
+	{
+		owner.updateGamingState(elapsed);
+		super.update(elapsed, owner, fsm);
+	}
+}
+
+private class PausedState extends FlxFSMState<PlayState> {
+	override public function enter(owner:PlayState, fsm:FlxFSM<PlayState>):Void 
+	{
+		owner.toggleEntitiesActive(false);
+		super.enter(owner, fsm);
+	}
+
+	override public function exit(owner:PlayState):Void
+	{
+		owner.toggleEntitiesActive(true);
+		super.exit(owner);
+	}
+}
+
+private class OutroState extends FlxFSMState<PlayState> {
+}
+
+private enum PlayingStates {
+	INTRO;
+	GAMING;
+	PAUSED;
+	OUTRO;
 }

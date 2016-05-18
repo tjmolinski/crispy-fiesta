@@ -246,11 +246,14 @@ private class Prone extends FlxFSMState<Player>
 		owner.scale.y = 0.5;
 		owner.y += owner.height * 0.5;
 		owner.updateHitbox();
+		owner.halfHeight = owner.height / 2;
+		super.enter(owner ,fsm);
 	}
 	
 	override public function update(elapsed:Float, owner:Player, fsm:FlxFSM<Player>):Void 
 	{
 		owner.handleInput(elapsed);
+		super.update(elapsed, owner, fsm);
 	}
 	
 	override public function exit(owner:Player):Void
@@ -258,6 +261,8 @@ private class Prone extends FlxFSMState<Player>
 		owner.scale.y = 1;
 		owner.y -= owner.height;
 		owner.updateHitbox();
+		owner.halfHeight = owner.height / 2;
+		super.exit(owner);
 	}
 }
 
@@ -266,5 +271,6 @@ private class Standing extends FlxFSMState<Player>
 	override public function update(elapsed:Float, owner:Player, fsm:FlxFSM<Player>):Void 
 	{
 		owner.handleInput(elapsed);
+		super.update(elapsed, owner, fsm);
 	}
 }
