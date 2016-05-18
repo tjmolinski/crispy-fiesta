@@ -317,6 +317,9 @@ class PlayState extends FlxState {
 			player.setLadderState(false);
 		}
 		
+		if (player.isDead) {
+			currentState = OUTRO;
+		}
 	}
 
 	public function toggleEntitiesActive(tf: Bool):Void {
@@ -369,8 +372,7 @@ private class IntroState extends FlxFSMState<PlayState> {
 }
 
 private class GamingState extends FlxFSMState<PlayState> {
-	override public function update(elapsed:Float, owner:PlayState, fsm:FlxFSM<PlayState>):Void 
-	{
+	override public function update(elapsed:Float, owner:PlayState, fsm:FlxFSM<PlayState>):Void {
 		owner.updateGamingState(elapsed);
 		super.update(elapsed, owner, fsm);
 	}
@@ -391,6 +393,16 @@ private class PausedState extends FlxFSMState<PlayState> {
 }
 
 private class OutroState extends FlxFSMState<PlayState> {
+	private var ticks:Int = 0;
+	
+	override public function update(elapsed:Float, owner:PlayState, fsm:FlxFSM<PlayState>):Void {
+		if (ticks++ > 100) {
+			FlxG.resetState();
+		}
+		
+		owner.updateGamingState(elapsed);
+		super.update(elapsed, owner, fsm);
+	}
 }
 
 private enum PlayingStates {

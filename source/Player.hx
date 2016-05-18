@@ -44,13 +44,14 @@ class Player extends FlxSprite implements LivingThing
 	public var halfWidth:Float;
 	public var halfHeight:Float;
 	
+	public var isDead:Bool = false;
+	
 	private var shootBtn:FlxKey = FlxKey.X;
 	private var jumpBtn:FlxKey = FlxKey.Z;
 	public var nameType:String = "player";
 	public var tileMap:FlxTilemap;
 	
-	override public function new(X:Int, Y:Int, _width:Float, _height:Float, _bullets:FlxTypedGroup<Bullet>, _tileMap:FlxTilemap) 
-	{
+	override public function new(X:Int, Y:Int, _width:Float, _height:Float, _bullets:FlxTypedGroup<Bullet>, _tileMap:FlxTilemap) {
 		super(X, Y);
 		
 		bullets = _bullets;
@@ -68,21 +69,19 @@ class Player extends FlxSprite implements LivingThing
 		fsm.transitions
 			.add(Prone, Standing, Conditions.isStanding)
 			.add(Standing, Prone, Conditions.isProne)
+			.addGlobal(Death, Conditions.isDead)
 			.start(Standing);
 	}
 
-	override public function update(elapsed:Float):Void
-	{
+	override public function update(elapsed:Float):Void {
 		fsm.update(elapsed);
 		super.update(elapsed);
 	}
 	
-	public function handleInput(elapsed:Float):Void
-	{
+	public function handleInput(elapsed:Float):Void {
 		handleDirection();
 
-		if (!linearJumped)
-		{
+		if (!linearJumped) {
 			handleRunningMovement(elapsed);
 		}
 
@@ -90,8 +89,7 @@ class Player extends FlxSprite implements LivingThing
 
 	}
 	
-	private function handleFloorCheck():Void
-	{
+	private function handleFloorCheck():Void {
 		if (this.isTouching(FlxObject.DOWN)) {
 			this.hitFloor();
 		}
@@ -216,19 +214,16 @@ class Player extends FlxSprite implements LivingThing
 	
 	public function hitByBullet(bullet: Bullet):Void
 	{
-		trace("dead");
+		isDead = true;
 	}
 }
 
-private class Conditions
-{
-	public static function isProne(Owner:Player):Bool
-	{
+private class Conditions {
+	public static function isProne(owner:Player):Bool {
 		return FlxG.keys.anyPressed([DOWN]);
 	}
 	
-	public static function isStanding(owner:Player):Bool
-	{
+	public static function isStanding(owner:Player):Bool {
 		var xLeftMostPos = Math.floor(owner.x / PlayState.TILE_WIDTH);
 		var xRightMostPos = Math.floor((owner.x + owner.width) / PlayState.TILE_WIDTH);
 		var yTile = Math.floor((owner.y) / PlayState.TILE_HEIGHT);
@@ -237,10 +232,13 @@ private class Conditions
 		
 		return !isProne(owner) && leftSideTileId == 0 && rightSideTileId == 0;
 	}
+	
+	public static function isDead(owner:Player):Bool {
+		return owner.isDead;
+	}
 }
 
-private class Prone extends FlxFSMState<Player>
-{
+private class Prone extends FlxFSMState<Player> {
 	override public function enter(owner:Player, fsm:FlxFSM<Player>):Void 
 	{
 		owner.scale.y = 0.5;
@@ -266,11 +264,18 @@ private class Prone extends FlxFSMState<Player>
 	}
 }
 
-private class Standing extends FlxFSMState<Player>
-{
+private class Standing extends FlxFSMState<Player> {
 	override public function update(elapsed:Float, owner:Player, fsm:FlxFSM<Player>):Void 
 	{
 		owner.handleInput(elapsed);
 		super.update(elapsed, owner, fsm);
+	}
+}
+
+private class Death extends FlxFSMState<Player> {
+	override public function enter(owner:Player, fsm:FlxFSM<Player>):Void 
+	{
+		owner.kill();
+		super.enter(owner, fsm);
 	}
 }
