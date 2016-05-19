@@ -10,30 +10,23 @@ import flixel.FlxObject;
 class DoubleJumpingPlayer extends Player 
 {
 	
-	override public function update(elapsed:Float):Void
-	{
+	override public function update(elapsed:Float):Void {
 		handleFloorCheck();
 		handleDoubleJumping(elapsed);
 		super.update(elapsed);
 	}
 	
-	private function handleDoubleJumping(elapsed:Float):Void
-	{
-		if(fallingThrough)
-		{
+	private function handleDoubleJumping(elapsed:Float):Void {
+		if(fallingThrough) {
 			return;
 		}
 
-		if (FlxG.keys.anyJustPressed([jumpBtn]))
-		{
-			if (!singleJumped)
-			{
+		if (FlxG.keys.anyJustPressed([jumpBtn])) {
+			if (!singleJumped) {
 				setLadderState(false);
 				singleJumped = true;
 				velocity.y = jumpSpeed;
-			}
-			else if (singleJumped && !doubleJumped)
-			{
+			} else if (singleJumped && !doubleJumped) {
 				doubleJumped = true;
 				velocity.y = jumpSpeed;
 			}

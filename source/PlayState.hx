@@ -1,5 +1,6 @@
 package;
 
+import flash.external.ExternalInterface;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -25,6 +26,8 @@ class PlayState extends FlxState {
 	
 	private var fsm:FlxFSM<PlayState>;
 	private var player:Player;
+	private var exits:FlxTypedGroup<Exit>;
+	private var killPits:FlxTypedGroup<KillPit>;
 	private var message:FlxTypeText;
 	private var ladders:FlxGroup;
 	private var movingPlatforms:FlxGroup;
@@ -95,10 +98,10 @@ class PlayState extends FlxState {
 		_mWalls.setTileProperties(14, FlxObject.UP | FlxObject.DOWN);
 		_mWalls.setTileProperties(15, FlxObject.NONE);
 		
-		_mWalls.setTileProperties(16, FlxObject.UP, handleFallThrough);
-		_mWalls.setTileProperties(17, FlxObject.NONE);
-		_mWalls.setTileProperties(18, FlxObject.NONE);
-		_mWalls.setTileProperties(19, FlxObject.NONE);
+		_mWalls.setTileProperties(16, FlxObject.UP, handleFallThrough); //Blue is jump throughable floor
+		_mWalls.setTileProperties(17, FlxObject.NONE); //Yellow	
+		_mWalls.setTileProperties(18, FlxObject.NONE); //Purple
+		_mWalls.setTileProperties(19, FlxObject.NONE); //Orange
 		_mWalls.setTileProperties(20, FlxObject.NONE);
 		_mWalls.setTileProperties(21, FlxObject.NONE);
 		_mWalls.setTileProperties(22, FlxObject.NONE);
@@ -110,6 +113,12 @@ class PlayState extends FlxState {
 	private function createEntities():Void {
 		ladders = new FlxGroup();
 		add(ladders);
+		
+		killPits = new FlxTypedGroup<KillPit>(100);
+		add(killPits);
+		
+		exits = new FlxTypedGroup<Exit>(3);
+		add(exits);
 		
 		movingPlatforms = new FlxGroup();
 		add(movingPlatforms);
@@ -140,6 +149,14 @@ class PlayState extends FlxState {
 					movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
 				case "basicEnemy":
 					enemies.recycle(BasicEnemy).spawn(posX, posY, data.get("walkLeft") == "True");
+				case "exit":
+					var width : Int = Std.parseInt(data.get("width"));
+					var height : Int = Std.parseInt(data.get("height"));
+					exits.recycle(Exit).spawn(posX, posY, width, height);
+				case "killPit":
+					var width : Int = Std.parseInt(data.get("width"));
+					var height : Int = Std.parseInt(data.get("height"));
+					killPits.recycle(KillPit).spawn(posX, posY, width, height);
 					
 			}
 		});
@@ -151,7 +168,7 @@ class PlayState extends FlxState {
 		
 		toggleEntitiesActive(false);
 	}
-		
+	
 	private function setupCamera():Void {
 		/* Effect Sprite and Message Text
 		add(_effectSprite = new FlxEffectSprite(player));
@@ -188,6 +205,10 @@ class PlayState extends FlxState {
 		FlxG.camera.bgColor = 0xff333333;
 	}
 	
+	private function fellInDeathPit(Tile:FlxObject, Object:FlxObject):Void {
+		player.kill();
+	}
+	
 	private function handleFallThrough(Tile:FlxObject, Object:FlxObject):Void {
 		if (Object != player) {
 			return;
@@ -195,7 +216,7 @@ class PlayState extends FlxState {
 		
 		var _pl = cast(Object, Player);
 		
-		if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([SPACE]))
+		if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([_pl.jumpBtn]))
 		{
 			_pl.fallThroughObj = Tile;
 			_pl.fallingThrough = true;
@@ -277,8 +298,7 @@ class PlayState extends FlxState {
 		});
 		
 		var onLadder = false;
-		FlxG.overlap(player, ladders, function(player:Player, obj:Ladder) {}, 
-		function(player:Player, obj:Ladder) {
+		FlxG.overlap(player, ladders, function(player:Player, obj:Ladder) {}, function(player:Player, obj:Ladder) {
 			if (FlxG.keys.anyPressed([UP]) && (player.y+player.height) < obj.y && obj.isHead) {
 				return FlxObject.separate(player, obj);
 			} else if (FlxG.keys.anyPressed([DOWN, UP]) || player.getLadderState()) {
@@ -294,6 +314,18 @@ class PlayState extends FlxState {
 				{
 					return false;
 				}
+			}
+		});
+		
+		FlxG.overlap(player, killPits, function(_player:Player, killPit:KillPit) {
+			if (_player.y > killPit.y) {
+				_player.kill();
+			}
+		});
+		
+		FlxG.overlap(player, exits, function(_player:Player, exit:Exit) {
+			if (Math.abs(_player.x - exit.x) < 5) {
+				currentState = OUTRO;
 			}
 		});
 				
@@ -394,6 +426,12 @@ private class PausedState extends FlxFSMState<PlayState> {
 
 private class OutroState extends FlxFSMState<PlayState> {
 	private var ticks:Int = 0;
+	
+	override public function enter(owner:PlayState, fsm:FlxFSM<PlayState>):Void 
+	{
+		owner.toggleEntitiesActive(false);
+		super.enter(owner, fsm);
+	}
 	
 	override public function update(elapsed:Float, owner:PlayState, fsm:FlxFSM<PlayState>):Void {
 		if (ticks++ > 100) {

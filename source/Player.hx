@@ -13,13 +13,13 @@ import flixel.addons.util.FlxFSM;
  * ...
  * @author TJ
  */
-class Player extends FlxSprite implements LivingThing
-{
+class Player extends FlxSprite implements LivingThing {
 	
 	private var fsm:FlxFSM<Player>;
 
-	private var runSpeed:Float = 1000;
+	private var currentSpeed:Float = 1000;
 	private var xMaxVel:Float = 100;
+	private var xCrouchMaxVel:Float = 25;
 	private var yMaxVel:Float = 500;
 	private var yMaxLadderVel:Float = 50;
 
@@ -27,9 +27,9 @@ class Player extends FlxSprite implements LivingThing
 	private var gravity:Float = 700;
 	private var jumpSpeed:Float = -300;
 	
-	private var singleJumped:Bool = false;
-	private var doubleJumped:Bool = false;
-	private var linearJumped:Bool = false;
+	public var singleJumped:Bool = false;
+	public var doubleJumped:Bool = false;
+	public var linearJumped:Bool = false;
 	
 	private var onLadder:Bool = false;
 	private var ladderSpeed:Float = 30.0;
@@ -46,8 +46,8 @@ class Player extends FlxSprite implements LivingThing
 	
 	public var isDead:Bool = false;
 	
-	private var shootBtn:FlxKey = FlxKey.X;
-	private var jumpBtn:FlxKey = FlxKey.Z;
+	public var shootBtn:FlxKey = FlxKey.X;
+	public var jumpBtn:FlxKey = FlxKey.Z;
 	public var nameType:String = "player";
 	public var tileMap:FlxTilemap;
 	
@@ -95,8 +95,7 @@ class Player extends FlxSprite implements LivingThing
 		}
 	}
 
-	private function handleDirection():Void
-	{
+	private function handleDirection():Void {
 		if(FlxG.keys.anyPressed([UP]))
 		{
 			direction = -90;
@@ -142,36 +141,28 @@ class Player extends FlxSprite implements LivingThing
 		}
 	}
 	
-	private function handleRunningMovement(elapsed:Float):Void
-	{
+	private function handleRunningMovement(elapsed:Float):Void {
 		acceleration.x = 0;
-		if (FlxG.keys.anyPressed([RIGHT]))
-		{
+		if (FlxG.keys.anyPressed([RIGHT])) {
 			flipX = false;
 			if(!isTouching(FlxObject.RIGHT) && !onLadder)
 			{
-			acceleration.x += runSpeed;
+			acceleration.x += currentSpeed;
 			}
-		} 
-		else if (FlxG.keys.anyPressed([LEFT]))
-		{
+		} else if (FlxG.keys.anyPressed([LEFT])) {
 			flipX = true;
-			if(!isTouching(FlxObject.LEFT) && !onLadder)
-			{
-				acceleration.x -= runSpeed;
+			if(!isTouching(FlxObject.LEFT) && !onLadder) {
+				acceleration.x -= currentSpeed;
 			}
 		}
 		
-		if (FlxG.keys.anyJustPressed([shootBtn]))
-		{
+		if (FlxG.keys.anyJustPressed([shootBtn])) {
 			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction, this);
 		}
 	}
 
-	public function handleLadderMovement()
-	{
-		if (onLadder)
-		{
+	public function handleLadderMovement() {
+		if (onLadder) {
 			x = ladderX;
 			acceleration.y = 0;
 			maxVelocity.set(0, yMaxLadderVel);
@@ -185,19 +176,21 @@ class Player extends FlxSprite implements LivingThing
 			}
 		} else {
 			acceleration.y = gravity;
-			maxVelocity.set(xMaxVel, yMaxVel);
+			if (maxVelocity.x != xCrouchMaxVel) {
+				maxVelocity.set(xMaxVel, yMaxVel);
+			} else {
+				maxVelocity.set(xCrouchMaxVel, yMaxVel);
+			}
 		}
 	}
 	
-	public function hitFloor():Void
-	{
+	public function hitFloor():Void {
 		singleJumped = false;
 		doubleJumped = false;
 		linearJumped = false;
 	}
 	
-	public function setLadderState(tf:Bool, ?X:Float):Void
-	{
+	public function setLadderState(tf:Bool, ?X:Float):Void {
 		onLadder = tf;
 		if (tf) {
 			ladderX = X;
@@ -207,20 +200,39 @@ class Player extends FlxSprite implements LivingThing
 		}
 	}
 	
-	public function getLadderState():Bool
-	{
+	public function getLadderState():Bool {
 		return onLadder;
 	}
 	
-	public function hitByBullet(bullet: Bullet):Void
-	{
+	public function hitByBullet(bullet: Bullet):Void {
+		kill();
+	}
+	
+	public function enterProneState() {
+		scale.y = 0.5;
+		y += height * 0.5;
+		updateHitbox();
+		halfHeight = height / 2;
+		maxVelocity.set(xCrouchMaxVel, yMaxVel);
+	}
+	
+	public function exitProneState() {
+		scale.y = 1;
+		y -= height;
+		updateHitbox();
+		halfHeight = height / 2;
+		maxVelocity.set(xMaxVel, yMaxVel);
+	}
+	
+	public override function kill():Void {
 		isDead = true;
+		super.kill();
 	}
 }
 
 private class Conditions {
 	public static function isProne(owner:Player):Bool {
-		return FlxG.keys.anyPressed([DOWN]);
+		return owner.isTouching(FlxObject.DOWN) && FlxG.keys.anyPressed([DOWN]);
 	}
 	
 	public static function isStanding(owner:Player):Bool {
@@ -241,10 +253,7 @@ private class Conditions {
 private class Prone extends FlxFSMState<Player> {
 	override public function enter(owner:Player, fsm:FlxFSM<Player>):Void 
 	{
-		owner.scale.y = 0.5;
-		owner.y += owner.height * 0.5;
-		owner.updateHitbox();
-		owner.halfHeight = owner.height / 2;
+		owner.enterProneState();
 		super.enter(owner ,fsm);
 	}
 	
@@ -256,10 +265,7 @@ private class Prone extends FlxFSMState<Player> {
 	
 	override public function exit(owner:Player):Void
 	{
-		owner.scale.y = 1;
-		owner.y -= owner.height;
-		owner.updateHitbox();
-		owner.halfHeight = owner.height / 2;
+		owner.exitProneState();
 		super.exit(owner);
 	}
 }
