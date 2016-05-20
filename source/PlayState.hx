@@ -33,6 +33,7 @@ class PlayState extends FlxState {
 	private var movingPlatforms:FlxGroup;
 	private var enemies:FlxTypedGroup<BasicEnemy>;
 	private var bullets:FlxTypedGroup<Bullet>;
+	private var vehicles:FlxTypedGroup<Vehicle>;
 	
 	private var OVERLAY_COLOR = 0xdd000000;
 	private var shadowCanvas:FlxSprite;
@@ -51,9 +52,9 @@ class PlayState extends FlxState {
 	public static var TILE_HEIGHT:Int = 16;
 
 	override public function create():Void {
-		createStateMachine();
 		createTileMap();
 		createEntities();
+		createStateMachine();
 		setupCamera();
 
 		super.create();
@@ -66,7 +67,7 @@ class PlayState extends FlxState {
 	}
 	
 	private function createStateMachine():Void {
-		fsm = new FlxFSM<PlayState>(this);
+		fsm = new FlxFSM<PlayState>(this, new IntroState());
 		fsm.transitions
 			.add(IntroState, GamingState, Conditions.isPlaying)
 			.add(GamingState, PausedState, Conditions.pressPause)
@@ -119,6 +120,9 @@ class PlayState extends FlxState {
 		
 		exits = new FlxTypedGroup<Exit>(3);
 		add(exits);
+
+		vehicles = new FlxTypedGroup<Vehicle>(5);
+		add(vehicles);
 		
 		movingPlatforms = new FlxGroup();
 		add(movingPlatforms);
@@ -129,8 +133,7 @@ class PlayState extends FlxState {
 		bullets = new FlxTypedGroup<Bullet>(100);
 		add(bullets);
 		
-		_map.loadEntities(function(type:String, data:Xml)
-		{
+		_map.loadEntities(function(type:String, data:Xml) {
 			var posX = Std.parseInt(data.get("x"));
 			var posY = Std.parseInt(data.get("y"));
 			switch(type) {
@@ -157,6 +160,8 @@ class PlayState extends FlxState {
 					var width : Int = Std.parseInt(data.get("width"));
 					var height : Int = Std.parseInt(data.get("height"));
 					killPits.recycle(KillPit).spawn(posX, posY, width, height);
+				case "vehicle":
+					vehicles.recycle(Vehicle).spawn(posX, posY);
 					
 			}
 		});
@@ -210,17 +215,24 @@ class PlayState extends FlxState {
 	}
 	
 	private function handleFallThrough(Tile:FlxObject, Object:FlxObject):Void {
-		if (Object != player) {
-			return;
+		if (Object == player) {
+			var _pl = cast(Object, Player);
+			
+			if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([_pl.jumpBtn]))
+			{
+				_pl.fallThroughObj = Tile;
+				_pl.fallingThrough = true;
+			}
+		} else if(Object == player.vehicle) {
+			var _veh = cast(Object, Vehicle);
+			
+			if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([player.jumpBtn]))
+			{
+				_veh.fallThroughObj = Tile;
+				_veh.fallingThrough = true;
+			}
 		}
 		
-		var _pl = cast(Object, Player);
-		
-		if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([_pl.jumpBtn]))
-		{
-			_pl.fallThroughObj = Tile;
-			_pl.fallingThrough = true;
-		}
 	}
 	
 	private function bulletCollision(bullet:Bullet, thing:Dynamic):Void {
@@ -236,10 +248,10 @@ class PlayState extends FlxState {
 
 		var col = new FlxColor(0xffcc77ee);
 		var studderEffect = 1;
-		for (i in 0...5) {
-			col.alpha = 10 + (25 * i);
+		for (i in 0...2) {
+			col.alpha = 100 + (50 * i);
 			
-			var radius = 100 + (25 * i);
+			var radius = 200 - (50 * i);
 		
 			shadowOverlay.drawCircle(
 				player.x + (player.width/2) + FlxG.random.float( -.6, .6),
@@ -254,10 +266,10 @@ class PlayState extends FlxState {
 
 		var bulletColor = new FlxColor(0xffffffcc);
 		bullets.forEachExists(function(bullet: Bullet) {
-			for (i in 0...5) {
-				bulletColor.alpha = 10 + (25 * i);
+			for (i in 0...2) {
+				bulletColor.alpha = 100 + (50 * i);
 
-				var radius = 5 + (2.5 * i);
+				var radius = 50 - (10 * i);
 			
 				shadowOverlay.drawCircle(
 					bullet.x + (bullet.width/2) + FlxG.random.float( -.6, .6),
@@ -268,6 +280,7 @@ class PlayState extends FlxState {
 	}
 
 	private function updateEffects(elapsed):Void {
+		//XXX: Heavy framerate loss on neko for effects
 		processShadows();
 		//_effectSprite.setPosition(player.x, player.y);
 		//message.x = player.x - (message.width/2);
@@ -277,14 +290,25 @@ class PlayState extends FlxState {
 	public function updateGamingState(elapsed):Void {
 		FlxG.overlap(bullets, player, bulletCollision);
 		FlxG.overlap(bullets, enemies, bulletCollision);
+
+		FlxG.overlap(player, vehicles, function(_pl:Player, veh:Vehicle) {
+		}, function(_pl:Player, veh:Vehicle) {
+			if(_pl.y + _pl.halfHeight < veh.y && 
+				_pl.velocity.y > 0 &&
+				Math.abs((_pl.x + _pl.halfWidth) - (veh.x + veh.halfWidth)) < _pl.halfWidth) {
+				_pl.jumpInVehicle(veh);
+			}
+			return false;
+		});
 		
+
+		///XXX: DRY these two functions up//////////////////////////////////////////////////
 		FlxG.overlap(player, movingPlatforms, function(_pl:Player, obj:MovingPlatform) {
 			handleFallThrough(obj, _pl);
 			
 			if (_pl.isTouching(FlxObject.DOWN)) {
 				_pl.hitFloor();
 			}
-
 		}, function(_pl:Player, obj:MovingPlatform) {
 			
 			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.y) {
@@ -294,8 +318,27 @@ class PlayState extends FlxState {
 				return false;
 			}
 			
-			return FlxObject.separate(player, obj);
+			return FlxObject.separate(_pl, obj);
 		});
+		FlxG.overlap(vehicles, movingPlatforms, function(veh:Vehicle, obj:MovingPlatform) {
+			handleFallThrough(obj, veh);
+			
+			if (veh.isTouching(FlxObject.DOWN)) {
+				veh.hitFloor();
+			}
+		}, function(veh:Vehicle, obj:MovingPlatform) {
+			
+			if (veh.fallThroughObj != null && veh.fallThroughObj.y < veh.y) {
+				veh.fallThroughObj = null;
+				veh.fallingThrough = false;
+			} else if (veh.fallingThrough) {
+				return false;
+			}
+			
+			return FlxObject.separate(veh, obj);
+		});
+		////////////////////////////////////////////////////////////////////////////////////////
+
 		
 		var onLadder = false;
 		FlxG.overlap(player, ladders, function(player:Player, obj:Ladder) {}, function(player:Player, obj:Ladder) {
@@ -341,8 +384,22 @@ class PlayState extends FlxState {
 			
 			return FlxObject.separate(_tile, _player);
 		});
-		enemies.forEach(function(enemy:FlxBasic) {
-			_mWalls.overlapsWithCallback(cast(enemy, FlxObject), FlxObject.separate);
+		enemies.forEach(function(enemy:BasicEnemy) {
+			_mWalls.overlapsWithCallback(enemy, FlxObject.separate);
+		});
+		vehicles.forEach(function(vehicle:Vehicle) {
+			_mWalls.overlapsWithCallback(vehicle, function(_tile: FlxObject, veh: FlxObject) {
+			var _veh = cast(veh, Vehicle);
+			
+			if (_veh.fallThroughObj != null && _veh.fallThroughObj.y < _veh.y) {
+				_veh.fallThroughObj = null;
+				_veh.fallingThrough = false;
+			} else if (_veh.fallingThrough) {
+				return false;
+			}
+			
+			return FlxObject.separate(_tile, _veh);
+		});
 		});
 		
 		if (!onLadder) {
@@ -360,6 +417,7 @@ class PlayState extends FlxState {
 		enemies.active = tf;
 		bullets.active = tf;
 		player.active = tf;
+		vehicles.active = tf;
 	}
 }
 

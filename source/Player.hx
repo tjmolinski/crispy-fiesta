@@ -17,7 +17,7 @@ class Player extends FlxSprite implements LivingThing {
 	
 	private var fsm:FlxFSM<Player>;
 
-	private var currentSpeed:Float = 1000;
+	private var moveSpeed:Float = 1000;
 	private var xMaxVel:Float = 100;
 	private var xCrouchMaxVel:Float = 25;
 	private var yMaxVel:Float = 500;
@@ -30,6 +30,9 @@ class Player extends FlxSprite implements LivingThing {
 	public var singleJumped:Bool = false;
 	public var doubleJumped:Bool = false;
 	public var linearJumped:Bool = false;
+
+	public var isInVehicle:Bool = false;
+	public var vehicle:Vehicle;
 	
 	private var onLadder:Bool = false;
 	private var ladderSpeed:Float = 30.0;
@@ -65,10 +68,11 @@ class Player extends FlxSprite implements LivingThing {
 		halfWidth = _width / 2;
 		halfHeight = _height / 2;
 		
-		fsm = new FlxFSM<Player>(this);
+		fsm = new FlxFSM<Player>(this, new Standing());
 		fsm.transitions
 			.add(Prone, Standing, Conditions.isStanding)
 			.add(Standing, Prone, Conditions.isProne)
+			.add(Standing, DrivingVehicle, Conditions.isInVehice)
 			.addGlobal(Death, Conditions.isDead)
 			.start(Standing);
 	}
@@ -86,7 +90,6 @@ class Player extends FlxSprite implements LivingThing {
 		}
 
 		handleLadderMovement();
-
 	}
 	
 	private function handleFloorCheck():Void {
@@ -96,46 +99,28 @@ class Player extends FlxSprite implements LivingThing {
 	}
 
 	private function handleDirection():Void {
-		if(FlxG.keys.anyPressed([UP]))
-		{
+		if(FlxG.keys.anyPressed([UP])) {
 			direction = -90;
-		}
-		else if(FlxG.keys.anyPressed([DOWN]))
-		{
+		} else if(FlxG.keys.anyPressed([DOWN])) {
 			direction = 90;
-		}
-		else
-		{
+		} else {
 			direction = flipX ? 180 : 0;
 		}
 		
-		if(FlxG.keys.anyPressed([LEFT]))
-		{
-			if(direction == 90)
-			{
+		if(FlxG.keys.anyPressed([LEFT])) {
+			if(direction == 90) {
 				direction = 155;
-			}
-			else if(direction == -90)
-			{
+			} else if(direction == -90) {
 				direction = -155;
-			}
-			else
-			{
+			} else {
 				direction = 180;
 			}
-		}
-		else if(FlxG.keys.anyPressed([RIGHT]))
-		{
-			if(direction == 90)
-			{
+		} else if(FlxG.keys.anyPressed([RIGHT])) {
+			if(direction == 90) {
 				direction = 25;
-			}
-			else if(direction == -90)
-			{
+			} else if(direction == -90) {
 				direction = -25;
-			}
-			else
-			{
+			} else {
 				direction = 0;
 			}
 		}
@@ -147,12 +132,12 @@ class Player extends FlxSprite implements LivingThing {
 			flipX = false;
 			if(!isTouching(FlxObject.RIGHT) && !onLadder)
 			{
-			acceleration.x += currentSpeed;
+			acceleration.x += moveSpeed;
 			}
 		} else if (FlxG.keys.anyPressed([LEFT])) {
 			flipX = true;
 			if(!isTouching(FlxObject.LEFT) && !onLadder) {
-				acceleration.x -= currentSpeed;
+				acceleration.x -= moveSpeed;
 			}
 		}
 		
@@ -228,6 +213,12 @@ class Player extends FlxSprite implements LivingThing {
 		isDead = true;
 		super.kill();
 	}
+
+	public function jumpInVehicle(veh:Vehicle):Void {
+		isInVehicle = true;
+		vehicle = veh;
+		vehicle.setDriver(this);
+	}
 }
 
 private class Conditions {
@@ -248,40 +239,57 @@ private class Conditions {
 	public static function isDead(owner:Player):Bool {
 		return owner.isDead;
 	}
+
+	public static function isInVehice(owner:Player):Bool {
+		return owner.isInVehicle;
+	}
 }
 
 private class Prone extends FlxFSMState<Player> {
-	override public function enter(owner:Player, fsm:FlxFSM<Player>):Void 
-	{
+	override public function enter(owner:Player, fsm:FlxFSM<Player>):Void {
 		owner.enterProneState();
 		super.enter(owner ,fsm);
 	}
 	
-	override public function update(elapsed:Float, owner:Player, fsm:FlxFSM<Player>):Void 
-	{
+	override public function update(elapsed:Float, owner:Player, fsm:FlxFSM<Player>):Void {
 		owner.handleInput(elapsed);
 		super.update(elapsed, owner, fsm);
 	}
 	
-	override public function exit(owner:Player):Void
-	{
+	override public function exit(owner:Player):Void {
 		owner.exitProneState();
 		super.exit(owner);
 	}
 }
 
 private class Standing extends FlxFSMState<Player> {
-	override public function update(elapsed:Float, owner:Player, fsm:FlxFSM<Player>):Void 
-	{
+	override public function update(elapsed:Float, owner:Player, fsm:FlxFSM<Player>):Void {
 		owner.handleInput(elapsed);
 		super.update(elapsed, owner, fsm);
 	}
 }
 
 private class Death extends FlxFSMState<Player> {
-	override public function enter(owner:Player, fsm:FlxFSM<Player>):Void 
-	{
+	override public function enter(owner:Player, fsm:FlxFSM<Player>):Void {
 		owner.kill();
 		super.enter(owner, fsm);
+	}
+}
+
+private class DrivingVehicle extends FlxFSMState<Player> {
+	override public function enter(owner:Player, fsm:FlxFSM<Player>):Void {
+		owner.visible = false;
+		owner.allowCollisions = FlxObject.NONE;
+		super.enter(owner, fsm);
+	}
+
+	override public function update(elapsed:Float, owner:Player, fsm:FlxFSM<Player>):Void {
+		super.update(elapsed, owner, fsm);
+	}
+	
+	override public function exit(owner:Player):Void {
+		owner.visible = true;
+		owner.allowCollisions = FlxObject.ANY;
+		super.exit(owner);
 	}
 }

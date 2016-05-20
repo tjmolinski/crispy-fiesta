@@ -40,5 +40,6 @@
     <killPit id="7" x="144" y="96" width="80" height="64" />
     <killPit id="8" x="288" y="96" width="80" height="64" />
     <movingPlatform id="9" x="16" y="240" width="64" height="32" xMove="316" yMove="0" />
+    <vehicle id="10" x="544" y="160" />
   </entities>
 </level>
