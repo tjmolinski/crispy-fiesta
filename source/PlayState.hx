@@ -161,7 +161,7 @@ class PlayState extends FlxState {
 					var height : Int = Std.parseInt(data.get("height"));
 					killPits.recycle(KillPit).spawn(posX, posY, width, height);
 				case "vehicle":
-					vehicles.recycle(Vehicle).spawn(posX, posY);
+					vehicles.recycle(Vehicle).spawn(posX, posY, bullets);
 					
 			}
 		});
@@ -218,28 +218,19 @@ class PlayState extends FlxState {
 		if (Object == player) {
 			var _pl = cast(Object, Player);
 			
-			if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([_pl.jumpBtn]))
-			{
+			if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([_pl.jumpBtn])) {
 				_pl.fallThroughObj = Tile;
 				_pl.fallingThrough = true;
 			}
 		} else if(Object == player.vehicle) {
 			var _veh = cast(Object, Vehicle);
 			
-			if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([player.jumpBtn]))
-			{
+			if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([player.jumpBtn])) {
 				_veh.fallThroughObj = Tile;
 				_veh.fallingThrough = true;
 			}
 		}
 		
-	}
-	
-	private function bulletCollision(bullet:Bullet, thing:Dynamic):Void {
-		if (thing.nameType != bullet.owner.nameType) {
-			bullet.kill();
-			thing.hitByBullet(bullet);
-		}
 	}
 	
 	private function processShadows():Void {
@@ -287,13 +278,22 @@ class PlayState extends FlxState {
 		//message.y = player.y - 100;
 	}
 	
+	private function bulletCollision(bullet:Bullet, thing:Dynamic):Void {
+		if (thing.nameType != bullet.owner.nameType) {
+			bullet.kill();
+			thing.hitByBullet(bullet);
+		}
+	}
+	
 	public function updateGamingState(elapsed):Void {
 		FlxG.overlap(bullets, player, bulletCollision);
 		FlxG.overlap(bullets, enemies, bulletCollision);
+		FlxG.overlap(bullets, vehicles, bulletCollision);
 
 		FlxG.overlap(player, vehicles, function(_pl:Player, veh:Vehicle) {
 		}, function(_pl:Player, veh:Vehicle) {
-			if(_pl.y + _pl.halfHeight < veh.y && 
+			if(!_pl.escapingVehicle &&
+				_pl.y + _pl.halfHeight < veh.y && 
 				_pl.velocity.y > 0 &&
 				Math.abs((_pl.x + _pl.halfWidth) - (veh.x + veh.halfWidth)) < _pl.halfWidth) {
 				_pl.jumpInVehicle(veh);

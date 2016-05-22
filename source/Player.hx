@@ -33,12 +33,13 @@ class Player extends FlxSprite implements LivingThing {
 
 	public var isInVehicle:Bool = false;
 	public var vehicle:Vehicle;
+	public var escapingVehicle:Bool = false;
 	
 	private var onLadder:Bool = false;
 	private var ladderSpeed:Float = 30.0;
 	
 	private var bullets:FlxTypedGroup<Bullet>;
-	private var direction:Float = 0;
+	public var direction:Float = 0;
 	private var ladderX:Float;
 
 	public var fallingThrough:Bool = false;
@@ -49,8 +50,9 @@ class Player extends FlxSprite implements LivingThing {
 	
 	public var isDead:Bool = false;
 	
-	public var shootBtn:FlxKey = FlxKey.X;
-	public var jumpBtn:FlxKey = FlxKey.Z;
+	public var shootBtn:FlxKey = FlxKey.Z;
+	public var jumpBtn:FlxKey = FlxKey.X;
+	public var escapeBtn:FlxKey = FlxKey.C;
 	public var nameType:String = "player";
 	public var tileMap:FlxTilemap;
 	
@@ -73,6 +75,7 @@ class Player extends FlxSprite implements LivingThing {
 			.add(Prone, Standing, Conditions.isStanding)
 			.add(Standing, Prone, Conditions.isProne)
 			.add(Standing, DrivingVehicle, Conditions.isInVehice)
+			.add(DrivingVehicle, Standing, Conditions.isEscapingVehicle)
 			.addGlobal(Death, Conditions.isDead)
 			.start(Standing);
 	}
@@ -98,7 +101,7 @@ class Player extends FlxSprite implements LivingThing {
 		}
 	}
 
-	private function handleDirection():Void {
+	public function handleDirection():Void {
 		if(FlxG.keys.anyPressed([UP])) {
 			direction = -90;
 		} else if(FlxG.keys.anyPressed([DOWN])) {
@@ -170,6 +173,7 @@ class Player extends FlxSprite implements LivingThing {
 	}
 	
 	public function hitFloor():Void {
+		escapingVehicle = false;
 		singleJumped = false;
 		doubleJumped = false;
 		linearJumped = false;
@@ -219,6 +223,19 @@ class Player extends FlxSprite implements LivingThing {
 		vehicle = veh;
 		vehicle.setDriver(this);
 	}
+
+	public function escapeVehicle():Void {
+		vehicle.setDriver(null);
+		isInVehicle = false;
+		vehicle = null;
+		singleJumped = true;
+		doubleJumped = true;
+		linearJumped = true;
+		velocity.x = 0;
+		velocity.y = jumpSpeed;
+		acceleration.x = 0;
+		escapingVehicle = true;
+	}
 }
 
 private class Conditions {
@@ -242,6 +259,10 @@ private class Conditions {
 
 	public static function isInVehice(owner:Player):Bool {
 		return owner.isInVehicle;
+	}
+
+	public static function isEscapingVehicle(owner:Player):Bool {
+		return FlxG.keys.anyPressed([owner.escapeBtn]);
 	}
 }
 
@@ -288,6 +309,7 @@ private class DrivingVehicle extends FlxFSMState<Player> {
 	}
 	
 	override public function exit(owner:Player):Void {
+		owner.escapeVehicle();
 		owner.visible = true;
 		owner.allowCollisions = FlxObject.ANY;
 		super.exit(owner);
