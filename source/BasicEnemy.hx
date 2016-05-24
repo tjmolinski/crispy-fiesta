@@ -66,8 +66,11 @@ class BasicEnemy extends FlxSprite implements LivingThing
 			exists = false;
 			return;
 		}
-		
-		fsm.update(elapsed);
+
+		if(isOnScreen()) {
+			fsm.update(elapsed);
+		}
+
 		super.update(elapsed);
 	}
 	
@@ -88,6 +91,7 @@ class BasicEnemy extends FlxSprite implements LivingThing
 	}
 	
 	public function hitByBullet(bullet: Bullet):Void {
+		bullet.kill();
 		kill();
 	}
 }

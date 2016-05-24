@@ -34,6 +34,7 @@ class PlayState extends FlxState {
 	private var enemies:FlxTypedGroup<BasicEnemy>;
 	private var bullets:FlxTypedGroup<Bullet>;
 	private var vehicles:FlxTypedGroup<Vehicle>;
+	private var bosses:FlxTypedGroup<Boss>;
 	
 	private var OVERLAY_COLOR = 0xdd000000;
 	private var shadowCanvas:FlxSprite;
@@ -129,6 +130,9 @@ class PlayState extends FlxState {
 		
 		enemies = new FlxTypedGroup<BasicEnemy>(100);
 		add(enemies);
+
+		bosses = new FlxTypedGroup<Boss>(5);
+		add(bosses);
 		
 		bullets = new FlxTypedGroup<Bullet>(100);
 		add(bullets);
@@ -152,6 +156,8 @@ class PlayState extends FlxState {
 					movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
 				case "basicEnemy":
 					enemies.recycle(BasicEnemy).spawn(posX, posY, data.get("walkLeft") == "True");
+				case "boss":
+					bosses.recycle(Boss).spawn(posX, posY);
 				case "exit":
 					var width : Int = Std.parseInt(data.get("width"));
 					var height : Int = Std.parseInt(data.get("height"));
@@ -167,8 +173,12 @@ class PlayState extends FlxState {
 		});
 		
 		//XXX: This is weird fix this in the future
-		enemies.forEach(function(genEnemy:FlxBasic) {
-			cast(genEnemy, BasicEnemy).setDependencies(player, _mWalls, bullets);
+		enemies.forEach(function(enemy:BasicEnemy) {
+			enemy.setDependencies(player, _mWalls, bullets);
+		});
+
+		bosses.forEach(function(boss:Boss) {
+			boss.setDependencies(player, bullets);
 		});
 		
 		toggleEntitiesActive(false);
@@ -192,14 +202,14 @@ class PlayState extends FlxState {
 		var levelBounds = _mWalls.getBounds();
 		FlxG.worldBounds.set( levelBounds.x, levelBounds.y, levelBounds.width, levelBounds.height);
 		
-		shadowCanvas = new FlxSprite();
+		/*shadowCanvas = new FlxSprite();
 		shadowCanvas.blend = BlendMode.MULTIPLY;
 		shadowCanvas.makeGraphic(cast(levelBounds.width, Int), cast(levelBounds.height, Int), FlxColor.TRANSPARENT, true);
 		add(shadowCanvas);
 		shadowOverlay = new FlxSprite();
 		shadowOverlay.makeGraphic(cast(levelBounds.width, Int), cast(levelBounds.height, Int), FlxColor.TRANSPARENT, true);
 		shadowOverlay.blend = BlendMode.MULTIPLY;
-		add(shadowOverlay);
+		add(shadowOverlay);*/
 		
 		FlxG.camera.follow(player, FlxCameraFollowStyle.PLATFORMER, 1);
 		FlxG.camera.maxScrollX = levelBounds.right;
@@ -230,7 +240,6 @@ class PlayState extends FlxState {
 				_veh.fallingThrough = true;
 			}
 		}
-		
 	}
 	
 	private function processShadows():Void {
@@ -272,7 +281,7 @@ class PlayState extends FlxState {
 
 	private function updateEffects(elapsed):Void {
 		//XXX: Heavy framerate loss on neko for effects
-		processShadows();
+		//processShadows();
 		//_effectSprite.setPosition(player.x, player.y);
 		//message.x = player.x - (message.width/2);
 		//message.y = player.y - 100;
@@ -280,15 +289,17 @@ class PlayState extends FlxState {
 	
 	private function bulletCollision(bullet:Bullet, thing:Dynamic):Void {
 		if (thing.nameType != bullet.owner.nameType) {
-			bullet.kill();
 			thing.hitByBullet(bullet);
 		}
 	}
 	
 	public function updateGamingState(elapsed):Void {
+		FlxG.camera.minScrollX = FlxG.camera.scroll.x;
+
 		FlxG.overlap(bullets, player, bulletCollision);
 		FlxG.overlap(bullets, enemies, bulletCollision);
 		FlxG.overlap(bullets, vehicles, bulletCollision);
+		FlxG.overlap(bullets, bosses, bulletCollision);
 
 		FlxG.overlap(player, vehicles, function(_pl:Player, veh:Vehicle) {
 		}, function(_pl:Player, veh:Vehicle) {
@@ -387,19 +398,22 @@ class PlayState extends FlxState {
 		enemies.forEach(function(enemy:BasicEnemy) {
 			_mWalls.overlapsWithCallback(enemy, FlxObject.separate);
 		});
+		bosses.forEach(function(boss:Boss) {
+			_mWalls.overlapsWithCallback(boss, FlxObject.separate);
+		});
 		vehicles.forEach(function(vehicle:Vehicle) {
 			_mWalls.overlapsWithCallback(vehicle, function(_tile: FlxObject, veh: FlxObject) {
-			var _veh = cast(veh, Vehicle);
-			
-			if (_veh.fallThroughObj != null && _veh.fallThroughObj.y < _veh.y) {
-				_veh.fallThroughObj = null;
-				_veh.fallingThrough = false;
-			} else if (_veh.fallingThrough) {
-				return false;
-			}
-			
-			return FlxObject.separate(_tile, _veh);
-		});
+				var _veh = cast(veh, Vehicle);
+				
+				if (_veh.fallThroughObj != null && _veh.fallThroughObj.y < _veh.y) {
+					_veh.fallThroughObj = null;
+					_veh.fallingThrough = false;
+				} else if (_veh.fallingThrough) {
+					return false;
+				}
+				
+				return FlxObject.separate(_tile, _veh);
+			});
 		});
 		
 		if (!onLadder) {
@@ -439,8 +453,7 @@ private class Conditions {
 private class IntroState extends FlxFSMState<PlayState> {
 	private var ticks:Int = 0;
 	
-	override public function enter(owner:PlayState, fsm:FlxFSM<PlayState>):Void 
-	{
+	override public function enter(owner:PlayState, fsm:FlxFSM<PlayState>):Void {
 		owner.toggleEntitiesActive(false);
 		super.enter(owner, fsm);
 	}
@@ -469,14 +482,12 @@ private class GamingState extends FlxFSMState<PlayState> {
 }
 
 private class PausedState extends FlxFSMState<PlayState> {
-	override public function enter(owner:PlayState, fsm:FlxFSM<PlayState>):Void 
-	{
+	override public function enter(owner:PlayState, fsm:FlxFSM<PlayState>):Void {
 		owner.toggleEntitiesActive(false);
 		super.enter(owner, fsm);
 	}
 
-	override public function exit(owner:PlayState):Void
-	{
+	override public function exit(owner:PlayState):Void {
 		owner.toggleEntitiesActive(true);
 		super.exit(owner);
 	}
@@ -485,8 +496,7 @@ private class PausedState extends FlxFSMState<PlayState> {
 private class OutroState extends FlxFSMState<PlayState> {
 	private var ticks:Int = 0;
 	
-	override public function enter(owner:PlayState, fsm:FlxFSM<PlayState>):Void 
-	{
+	override public function enter(owner:PlayState, fsm:FlxFSM<PlayState>):Void {
 		owner.toggleEntitiesActive(false);
 		super.enter(owner, fsm);
 	}

@@ -82,6 +82,12 @@ class Player extends FlxSprite implements LivingThing {
 
 	override public function update(elapsed:Float):Void {
 		fsm.update(elapsed);
+
+		if(x < FlxG.camera.minScrollX) {
+			x = FlxG.camera.minScrollX;
+			acceleration.x = 0;
+		}
+
 		super.update(elapsed);
 	}
 	
@@ -194,6 +200,7 @@ class Player extends FlxSprite implements LivingThing {
 	}
 	
 	public function hitByBullet(bullet: Bullet):Void {
+		bullet.kill();
 		kill();
 	}
 	
