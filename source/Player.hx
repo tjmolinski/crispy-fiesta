@@ -18,8 +18,8 @@ class Player extends FlxSprite implements LivingThing {
 	private var fsm:FlxFSM<Player>;
 
 	private var moveSpeed:Float = 1000;
-	private var xMaxVel:Float = 100;
-	private var xCrouchMaxVel:Float = 25;
+	private var xMaxVel:Float = 125;
+	private var xCrouchMaxVel:Float = 50;
 	private var yMaxVel:Float = 500;
 	private var yMaxLadderVel:Float = 50;
 
@@ -123,24 +123,6 @@ class Player extends FlxSprite implements LivingThing {
 			direction = 90;
 		} else {
 			direction = flipX ? 180 : 0;
-		}
-		
-		if(FlxG.keys.anyPressed([LEFT])) {
-			if(direction == 90) {
-				direction = 155;
-			} else if(direction == -90) {
-				direction = -155;
-			} else {
-				direction = 180;
-			}
-		} else if(FlxG.keys.anyPressed([RIGHT])) {
-			if(direction == 90) {
-				direction = 25;
-			} else if(direction == -90) {
-				direction = -25;
-			} else {
-				direction = 0;
-			}
 		}
 	}
 	
