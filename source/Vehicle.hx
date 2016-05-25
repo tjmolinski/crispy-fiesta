@@ -65,7 +65,23 @@ class Vehicle extends FlxSprite implements LivingThing {
 			}
 		}
 
+		if(driver != null) {
+			checkVehicleLevelBounds();
+		}
+
 		super.update(elapsed);
+	}
+
+	private function checkVehicleLevelBounds() {
+		if(x < FlxG.camera.minScrollX) {
+			x = FlxG.camera.minScrollX;
+			acceleration.x = 0;
+		}
+
+		if(x > FlxG.camera.minScrollX + FlxG.width - width) {
+			x = FlxG.camera.minScrollX + FlxG.width - width;
+			acceleration.x = 0;
+		}
 	}
 	
 	public function spawn(posX: Float, posY: Float, _bullets:FlxTypedGroup<Bullet>) {

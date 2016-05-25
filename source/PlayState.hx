@@ -157,7 +157,8 @@ class PlayState extends FlxState {
 				case "basicEnemy":
 					enemies.recycle(BasicEnemy).spawn(posX, posY, data.get("walkLeft") == "True");
 				case "boss":
-					bosses.recycle(Boss).spawn(posX, posY);
+					var offsetX : Float = Std.parseFloat(data.get("offsetX"));
+					bosses.recycle(Boss).spawn(posX, posY, offsetX);
 				case "exit":
 					var width : Int = Std.parseInt(data.get("width"));
 					var height : Int = Std.parseInt(data.get("height"));
@@ -211,7 +212,8 @@ class PlayState extends FlxState {
 		shadowOverlay.blend = BlendMode.MULTIPLY;
 		add(shadowOverlay);*/
 		
-		FlxG.camera.follow(player, FlxCameraFollowStyle.PLATFORMER, 1);
+		FlxG.camera.follow(player, FlxCameraFollowStyle.PLATFORMER, 0.05);
+		FlxG.camera.targetOffset.set(100, 0);
 		FlxG.camera.maxScrollX = levelBounds.right;
 		FlxG.camera.minScrollX = levelBounds.left;
 		FlxG.camera.maxScrollY = levelBounds.bottom;

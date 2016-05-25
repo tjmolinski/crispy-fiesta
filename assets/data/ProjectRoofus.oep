@@ -186,7 +186,9 @@
       <ImageDefinition DrawMode="Rectangle" ImagePath="" Tiled="false">
         <RectColor A="255" R="255" G="128" B="64" />
       </ImageDefinition>
-      <ValueDefinitions />
+      <ValueDefinitions>
+        <ValueDefinition xsi:type="IntValueDefinition" Name="offsetX" Default="0" Min="-1000" Max="1000" ShowSlider="false" />
+      </ValueDefinitions>
       <NodesDefinition Enabled="false" Limit="-1" DrawMode="None" Ghost="false" />
     </EntityDefinition>
   </EntityDefinitions>

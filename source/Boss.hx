@@ -1,5 +1,7 @@
 package;
 
+import flixel.FlxCamera;
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.util.FlxFSM;
 import flixel.addons.util.FlxFSM;
@@ -31,6 +33,8 @@ class Boss extends FlxSprite implements LivingThing {
 	public var nameType:String = "boss";
 
 	private var healthPoints:Int = 25;
+
+	private var offsetX:Float;
 	
 	override public function new() {
 		super(0, 0);
@@ -42,8 +46,9 @@ class Boss extends FlxSprite implements LivingThing {
 		fsm = new FlxFSM<Boss>(this, new Idle());
 	}
 	
-	public function spawn(X:Float, Y:Float):Void {
+	public function spawn(X:Float, Y:Float, offset:Float):Void {
 		super.reset(X, Y);
+		offsetX = offset;
 	}
 	
 	override public function update(elapsed:Float):Void {
@@ -52,11 +57,29 @@ class Boss extends FlxSprite implements LivingThing {
 			return;
 		}
 
-		if(isOnScreen()) {
+		if(isOnScreen() && reachedLockingPosition()) {
+			lockCamera();
 			fsm.update(elapsed);
 		}
 
 		super.update(elapsed);
+	}
+
+	private function reachedLockingPosition() {
+		return FlxG.camera.scroll.x > x + offsetX - (FlxG.width / 2);
+	}
+
+	private function lockCamera() {
+		if(FlxG.camera.target != null) {
+			FlxG.camera.follow(null);
+		}
+	}
+
+	private function unlockCamera() {
+		if(FlxG.camera.target == null) {
+			FlxG.camera.follow(playerRef, FlxCameraFollowStyle.PLATFORMER, 0.1);
+			FlxG.camera.targetOffset.set(100, 0);
+		}
 	}
 	
 	override public function destroy():Void {
@@ -79,6 +102,7 @@ class Boss extends FlxSprite implements LivingThing {
 			bullet.kill();
 			FlxFlicker.flicker(this, 0.5);
 			if(--healthPoints <= 0) {
+				unlockCamera();
 				kill();
 			}
 		}

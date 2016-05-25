@@ -83,12 +83,21 @@ class Player extends FlxSprite implements LivingThing {
 	override public function update(elapsed:Float):Void {
 		fsm.update(elapsed);
 
+		checkPlayerLevelBounds();
+
+		super.update(elapsed);
+	}
+
+	private function checkPlayerLevelBounds() {
 		if(x < FlxG.camera.minScrollX) {
 			x = FlxG.camera.minScrollX;
 			acceleration.x = 0;
 		}
 
-		super.update(elapsed);
+		if(x > FlxG.camera.minScrollX + FlxG.width - width) {
+			x = FlxG.camera.minScrollX + FlxG.width - width;
+			acceleration.x = 0;
+		}
 	}
 	
 	public function handleInput(elapsed:Float):Void {

@@ -44,6 +44,6 @@
     <basicEnemy id="11" x="896" y="336" walkLeft="True" />
     <basicEnemy id="12" x="1120" y="240" walkLeft="True" />
     <basicEnemy id="13" x="1344" y="144" walkLeft="True" />
-    <boss id="14" x="2080" y="208" />
+    <boss id="14" x="2048" y="208" offsetX="-192" />
   </entities>
 </level>
