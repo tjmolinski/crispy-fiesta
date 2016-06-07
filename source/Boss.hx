@@ -2,6 +2,7 @@ package;
 
 import flixel.FlxCamera;
 import flixel.FlxG;
+import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.addons.util.FlxFSM;
 import flixel.addons.util.FlxFSM;
@@ -34,7 +35,7 @@ class Boss extends FlxSprite implements LivingThing {
 
 	private var healthPoints:Int = 25;
 
-	private var offsetX:Float;
+	private var offsetObject:FlxObject;
 	
 	override public function new() {
 		super(0, 0);
@@ -48,7 +49,7 @@ class Boss extends FlxSprite implements LivingThing {
 	
 	public function spawn(X:Float, Y:Float, offset:Float):Void {
 		super.reset(X, Y);
-		offsetX = offset;
+		offsetObject = new FlxObject(x + offset, 0);
 	}
 	
 	override public function update(elapsed:Float):Void {
@@ -57,7 +58,7 @@ class Boss extends FlxSprite implements LivingThing {
 			return;
 		}
 
-		if(isOnScreen() && reachedLockingPosition()) {
+		if(isOnScreen()) {
 			lockCamera();
 			fsm.update(elapsed);
 		}
@@ -65,18 +66,14 @@ class Boss extends FlxSprite implements LivingThing {
 		super.update(elapsed);
 	}
 
-	private function reachedLockingPosition() {
-		return FlxG.camera.scroll.x > x + offsetX - (FlxG.width / 2);
-	}
-
 	private function lockCamera() {
-		if(FlxG.camera.target != null) {
-			FlxG.camera.follow(null);
+		if(FlxG.camera.target != offsetObject) {
+			FlxG.camera.follow(offsetObject, FlxCameraFollowStyle.PLATFORMER, 0.05);
 		}
 	}
 
 	private function unlockCamera() {
-		if(FlxG.camera.target == null) {
+		if(FlxG.camera.target == offsetObject) {
 			FlxG.camera.follow(playerRef, FlxCameraFollowStyle.PLATFORMER, 0.1);
 			FlxG.camera.targetOffset.set(100, 0);
 		}

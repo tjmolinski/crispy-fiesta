@@ -195,6 +195,10 @@ class Player extends FlxSprite implements LivingThing {
 		kill();
 	}
 	
+	public function overlappingEnemy(thing: Dynamic):Void {
+		kill();
+	}
+	
 	public function enterProneState() {
 		scale.y = 0.5;
 		y += height * 0.5;

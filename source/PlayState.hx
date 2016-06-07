@@ -295,6 +295,10 @@ class PlayState extends FlxState {
 		}
 	}
 	
+	private function enemyCollision(_player:Player, thing:Dynamic):Void {
+		_player.overlappingEnemy(thing);
+	}
+	
 	public function updateGamingState(elapsed):Void {
 		FlxG.camera.minScrollX = FlxG.camera.scroll.x;
 
@@ -302,6 +306,9 @@ class PlayState extends FlxState {
 		FlxG.overlap(bullets, enemies, bulletCollision);
 		FlxG.overlap(bullets, vehicles, bulletCollision);
 		FlxG.overlap(bullets, bosses, bulletCollision);
+
+		FlxG.overlap(player, bosses, enemyCollision);
+		FlxG.overlap(player, enemies, enemyCollision);
 
 		FlxG.overlap(player, vehicles, function(_pl:Player, veh:Vehicle) {
 		}, function(_pl:Player, veh:Vehicle) {

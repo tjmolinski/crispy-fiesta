@@ -155,6 +155,10 @@ class Vehicle extends FlxSprite implements LivingThing {
 	}
 
 	public function hitByBullet(bullet:Bullet): Void {
+		if(bullet.owner.nameType == "player") {
+			return;
+		}
+
 		bullet.kill();
 		if(--healthPoints <= 0 && !isBlowingUp) {
 			isBlowingUp = true;
