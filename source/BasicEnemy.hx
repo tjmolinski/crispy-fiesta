@@ -94,6 +94,9 @@ class BasicEnemy extends FlxSprite implements LivingThing
 		bullet.kill();
 		kill();
 	}
+	
+	public function hitByLaser(laser: Laser):Void {
+	}
 }
 
 private class Conditions {

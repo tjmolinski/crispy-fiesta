@@ -164,4 +164,10 @@ class Vehicle extends FlxSprite implements LivingThing {
 			isBlowingUp = true;
 		}
 	}
+	
+	public function hitByLaser(laser: Laser):Void {
+		if(!isBlowingUp) {
+			isBlowingUp = true;
+		}
+	}
 }

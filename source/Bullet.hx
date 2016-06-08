@@ -9,8 +9,7 @@ import flixel.util.FlxColor;
  * ...
  * @author TJ
  */
-class Bullet extends FlxSprite
-{
+class Bullet extends FlxSprite {
 	
 	private var bulletSpeed:Float = 250;
 	private var direction:Float = 0;

@@ -195,6 +195,10 @@ class Player extends FlxSprite implements LivingThing {
 		kill();
 	}
 	
+	public function hitByLaser(laser: Laser):Void {
+		kill();
+	}
+	
 	public function overlappingEnemy(thing: Dynamic):Void {
 		kill();
 	}

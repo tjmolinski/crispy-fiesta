@@ -3,18 +3,20 @@ package;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
-import flixel.FlxSprite;
+import flixel.addons.display.FlxNestedSprite;
 import flixel.addons.util.FlxFSM;
 import flixel.addons.util.FlxFSM;
 import flixel.effects.FlxFlicker;
 import flixel.group.FlxGroup;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 
 /**
  * ...
  * @author TJ
  */
-class Boss extends FlxSprite implements LivingThing {
+class Boss extends FlxNestedSprite implements LivingThing {
 	
 	private var fsm:FlxFSM<Boss>;
 
@@ -30,17 +32,34 @@ class Boss extends FlxSprite implements LivingThing {
 	public var halfHeight:Float;
 	
 	public var playerRef:Player;
-	private var bullets:FlxTypedGroup<Bullet>;
+	private var lasers:FlxTypedGroup<Laser>;
 	public var nameType:String = "boss";
 
 	private var healthPoints:Int = 25;
 
 	private var offsetObject:FlxObject;
+
+	public var body:FlxNestedSprite;
+	public var weakSpot:FlxNestedSprite;
+	public var laser:FlxNestedSprite;
 	
 	override public function new() {
 		super(0, 0);
 		
-		makeGraphic(64, 256, FlxColor.ORANGE);
+		body = new FlxNestedSprite();
+		body.makeGraphic(64, 256, FlxColor.ORANGE);
+		add(body);
+
+		weakSpot = new FlxNestedSprite();
+		weakSpot.relativeY = 128;
+		weakSpot.makeGraphic(64, 64, FlxColor.RED);
+		add(weakSpot);
+
+		laser = new FlxNestedSprite();
+		laser.relativeY = 96;
+		laser.makeGraphic(64, 32, FlxColor.GREEN);
+		add(laser);
+
 		halfWidth = 32;
 		halfHeight = 128;
 		
@@ -85,24 +104,25 @@ class Boss extends FlxSprite implements LivingThing {
 		super.destroy();
 	}
 	
-	public function setDependencies(player:Player, _bullets:FlxTypedGroup<Bullet>):Void {
+	public function setDependencies(player:Player, _lasers:FlxTypedGroup<Laser>):Void {
 		playerRef = player;
-		bullets = _bullets;
+		lasers = _lasers;
 	}
 	
-	public function shootBullet(yOffset):Void {
-		bullets.recycle(Bullet).fireBullet(x+halfWidth, y+yOffset, 180, this);
+	public function shootLaser(yOffset):Void {
+		lasers.recycle(Laser).fireLaser(x+halfWidth, y+yOffset, this);
 	}
 	
 	public function hitByBullet(bullet: Bullet):Void {
-		if(bullet.y < y + halfHeight) {
-			bullet.kill();
-			FlxFlicker.flicker(this, 0.5);
-			if(--healthPoints <= 0) {
-				unlockCamera();
-				kill();
-			}
+		bullet.kill();
+		FlxFlicker.flicker(this, 0.5);
+		if(--healthPoints <= 0) {
+			unlockCamera();
+			kill();
 		}
+	}
+	
+	public function hitByLaser(laser: Laser):Void {
 	}
 }
 
@@ -131,26 +151,29 @@ private class Attack extends FlxFSMState<Boss> {
 	}
 	
 	override public function update(elapsed:Float, owner:Boss, fsm:FlxFSM<Boss>):Void {
-		if(ticker < 25) {
-			if (ticker++ % 5 == 0) {
-				owner.shootBullet(owner.halfHeight);
-			}
-		} else if(ticker < 50) {
-			if (ticker++ % 5 == 0) {
-				owner.shootBullet(owner.height);
-			}
-		} else if(ticker < 75) {
-			if (ticker++ % 5 == 0) {
-				owner.shootBullet(owner.halfHeight);
-			}
-		} else {
-			if (ticker++ % 5 == 0) {
-				owner.shootBullet(owner.height);
-			}
-		}
-		if(ticker > 100) {
-			fsm.state = new Idle();
+		if(ticker < 100) {
+			owner.shootLaser(owner.laser.relativeY);
+			fsm.state = new ShiftLaser();
 		}
 		super.update(elapsed, owner, fsm);
+	}
+}
+
+private class ShiftLaser extends FlxFSMState<Boss> {
+	private var startingHeight:Float;
+	private var targetHeight:Float;
+
+	override public function enter(owner:Boss, fsm:FlxFSM<Boss>):Void {
+		startingHeight = owner.laser.relativeY;
+		targetHeight = startingHeight == 96 ? 222 : 96;
+	}
+
+	override public function update(elapsed:Float, owner:Boss, fsm:FlxFSM<Boss>):Void {
+		FlxTween.tween(owner.laser, { relativeY: targetHeight }, 2, {
+			onComplete: function(tween:FlxTween) {
+				fsm.state = new Idle();
+			},
+			ease: FlxEase.cubeInOut
+		});
 	}
 }

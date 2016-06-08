@@ -33,6 +33,7 @@ class PlayState extends FlxState {
 	private var movingPlatforms:FlxGroup;
 	private var enemies:FlxTypedGroup<BasicEnemy>;
 	private var bullets:FlxTypedGroup<Bullet>;
+	private var lasers:FlxTypedGroup<Laser>;
 	private var vehicles:FlxTypedGroup<Vehicle>;
 	private var bosses:FlxTypedGroup<Boss>;
 	
@@ -136,6 +137,9 @@ class PlayState extends FlxState {
 		
 		bullets = new FlxTypedGroup<Bullet>(100);
 		add(bullets);
+
+		lasers = new FlxTypedGroup<Laser>(100);
+		add(lasers);
 		
 		_map.loadEntities(function(type:String, data:Xml) {
 			var posX = Std.parseInt(data.get("x"));
@@ -179,7 +183,7 @@ class PlayState extends FlxState {
 		});
 
 		bosses.forEach(function(boss:Boss) {
-			boss.setDependencies(player, bullets);
+			boss.setDependencies(player, lasers);
 		});
 		
 		toggleEntitiesActive(false);
@@ -289,14 +293,26 @@ class PlayState extends FlxState {
 		//message.y = player.y - 100;
 	}
 	
-	private function bulletCollision(bullet:Bullet, thing:Dynamic):Void {
-		if (thing.nameType != bullet.owner.nameType) {
-			thing.hitByBullet(bullet);
+	private function bulletCollision(bullet:Bullet, thing:LivingThing):Void {
+		if(cast(thing, FlxBasic).alive) {
+			if (thing.nameType != bullet.owner.nameType) {
+				thing.hitByBullet(bullet);
+			}
 		}
 	}
 	
-	private function enemyCollision(_player:Player, thing:Dynamic):Void {
-		_player.overlappingEnemy(thing);
+	private function laserCollision(laser:Laser, thing:LivingThing):Void {
+		if(cast(thing, FlxBasic).alive) {
+			if (thing.nameType != laser.owner.nameType) {
+				thing.hitByLaser(laser);
+			}
+		}
+	}
+	
+	private function enemyCollision(_player:Player, thing:LivingThing):Void {
+		if(cast(thing, FlxBasic).alive && _player.alive) {
+			_player.overlappingEnemy(thing);
+		}
 	}
 	
 	public function updateGamingState(elapsed):Void {
@@ -305,9 +321,19 @@ class PlayState extends FlxState {
 		FlxG.overlap(bullets, player, bulletCollision);
 		FlxG.overlap(bullets, enemies, bulletCollision);
 		FlxG.overlap(bullets, vehicles, bulletCollision);
-		FlxG.overlap(bullets, bosses, bulletCollision);
 
-		FlxG.overlap(player, bosses, enemyCollision);
+		FlxG.overlap(lasers, player, laserCollision);
+		FlxG.overlap(lasers, vehicles, laserCollision);
+
+		bosses.forEach(function(boss: Boss) {
+			FlxG.overlap(bullets, boss.weakSpot, function(bullet:Bullet, thing:FlxSprite) {
+				bulletCollision(bullet, boss);
+			});
+			FlxG.overlap(player, boss.body, function(player:Player, thing:FlxSprite) {
+				enemyCollision(player, boss);
+			});
+		});
+
 		FlxG.overlap(player, enemies, enemyCollision);
 
 		FlxG.overlap(player, vehicles, function(_pl:Player, veh:Vehicle) {
@@ -408,7 +434,7 @@ class PlayState extends FlxState {
 			_mWalls.overlapsWithCallback(enemy, FlxObject.separate);
 		});
 		bosses.forEach(function(boss:Boss) {
-			_mWalls.overlapsWithCallback(boss, FlxObject.separate);
+			_mWalls.overlapsWithCallback(boss.body, FlxObject.separate);
 		});
 		vehicles.forEach(function(vehicle:Vehicle) {
 			_mWalls.overlapsWithCallback(vehicle, function(_tile: FlxObject, veh: FlxObject) {
