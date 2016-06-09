@@ -12,6 +12,7 @@ import flixel.util.FlxColor;
 class Bullet extends FlxSprite {
 	
 	private var bulletSpeed:Float = 250;
+	private var baseSpeed:Float = 0;
 	private var direction:Float = 0;
 	private var halfWidth:Float;
 	private var halfHeight:Float;
@@ -39,7 +40,7 @@ class Bullet extends FlxSprite {
 			kill();
 		}
 		
-		velocity.set(bulletSpeed, 0);
+		velocity.set(bulletSpeed + baseSpeed, 0);
       	velocity.rotate(FlxPoint.weak(0, 0), direction);
 		
 		super.update(elapsed);
@@ -51,10 +52,11 @@ class Bullet extends FlxSprite {
 		super.kill();
 	}
 	
-	public function fireBullet(X:Float, Y:Float, dir:Float, _owner:LivingThing):Void
+	public function fireBullet(X:Float, Y:Float, _speed:Float, dir:Float, _owner:LivingThing):Void
 	{
 		super.reset(X-halfWidth, Y-halfHeight);
 		direction = dir;
 		owner = _owner;
+		baseSpeed = _speed;
 	}
 }

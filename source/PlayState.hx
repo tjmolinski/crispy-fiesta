@@ -81,7 +81,7 @@ class PlayState extends FlxState {
 	}
 	
 	private function createTileMap():Void {	
-		_map = new FlxOgmoLoader("assets/data/test_level.oel");
+		_map = new FlxOgmoLoader("assets/data/test_level2.oel");
 		_mWalls = _map.loadTilemap("assets/images/level_tiles.png", TILE_WIDTH, TILE_HEIGHT, "tiles");
 		_mWalls.setTileProperties(0, FlxObject.NONE);
 		_mWalls.setTileProperties(1, FlxObject.UP);

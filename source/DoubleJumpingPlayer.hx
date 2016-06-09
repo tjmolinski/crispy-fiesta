@@ -7,8 +7,7 @@ import flixel.FlxObject;
  * ...
  * @author TJ
  */
-class DoubleJumpingPlayer extends Player 
-{
+class DoubleJumpingPlayer extends Player {
 	
 	override public function update(elapsed:Float):Void {
 		handleFloorCheck();
@@ -30,9 +29,6 @@ class DoubleJumpingPlayer extends Player
 				doubleJumped = true;
 				velocity.y = jumpSpeed;
 			}
-			
 		}
-		
 	}
-	
 }

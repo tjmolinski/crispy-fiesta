@@ -30,6 +30,7 @@ class Player extends FlxSprite implements LivingThing {
 	public var singleJumped:Bool = false;
 	public var doubleJumped:Bool = false;
 	public var linearJumped:Bool = false;
+	public var boosted:Bool = false;
 
 	public var isInVehicle:Bool = false;
 	public var vehicle:Vehicle;
@@ -64,7 +65,7 @@ class Player extends FlxSprite implements LivingThing {
 		
 		makeGraphic(cast(_width, Int), cast(_height, Int), FlxColor.RED);
 		drag.set(playerDrag, playerDrag);
-		acceleration.set(0, gravity);
+		acceleration.y = gravity;
 		maxVelocity.set(xMaxVel, yMaxVel);
 		
 		halfWidth = _width / 2;
@@ -142,7 +143,7 @@ class Player extends FlxSprite implements LivingThing {
 		}
 		
 		if (FlxG.keys.anyJustPressed([shootBtn])) {
-			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction, this);
+			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, velocity.x, direction, this);
 		}
 	}
 
@@ -208,7 +209,7 @@ class Player extends FlxSprite implements LivingThing {
 		y += height * 0.5;
 		updateHitbox();
 		halfHeight = height / 2;
-		maxVelocity.set(xCrouchMaxVel, yMaxVel);
+		//maxVelocity.set(xCrouchMaxVel, yMaxVel);
 	}
 	
 	public function exitProneState() {
@@ -216,7 +217,7 @@ class Player extends FlxSprite implements LivingThing {
 		y -= height;
 		updateHitbox();
 		halfHeight = height / 2;
-		maxVelocity.set(xMaxVel, yMaxVel);
+		//maxVelocity.set(xMaxVel, yMaxVel);
 	}
 	
 	public override function kill():Void {
