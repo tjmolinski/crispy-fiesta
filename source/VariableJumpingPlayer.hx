@@ -16,7 +16,10 @@ class VariableJumpingPlayer extends Player {
 	private var lastBoostBtn: FlxKey = null;
 	private var lastBoostPress: Int = 0;
 
-	private var boostSpeed: Float = 450;
+	private var doubleTapFrameLimit: Int = 15;
+	private var horizontalBoostSpeed: Float = 450;
+	private var verticalBoostSpeed: Float = -450;
+	private var horizontalLiftSpeed: Float = -150;
 	
 	override public function update(elapsed:Float):Void {
 		handleFloorCheck();
@@ -32,10 +35,10 @@ class VariableJumpingPlayer extends Player {
 	private function boosting() {
 		switch(lastBoostBtn) {
 			case FlxKey.RIGHT:
-				velocity.x = boostSpeed;
+				velocity.x = horizontalBoostSpeed;
 
 			case FlxKey.LEFT:
-				velocity.x = -boostSpeed;
+				velocity.x = -horizontalBoostSpeed;
 
 			default:
 		}
@@ -70,6 +73,10 @@ class VariableJumpingPlayer extends Player {
 	}
 
 	private function handleRocketBoosting(elapsed:Float):Void {
+		if(isInVehicle) {
+			return;
+		}
+
 		if(lastBoostBtn != null) {
 			performRocketBoost();
 		} else {
@@ -78,7 +85,7 @@ class VariableJumpingPlayer extends Player {
 	}
 
 	private function performRocketBoost():Void {
-		if(lastBoostPress > 25 && !boosted) {
+		if(lastBoostPress > doubleTapFrameLimit && !boosted) {
 			lastBoostBtn = null;
 			return;
 		}
@@ -115,19 +122,19 @@ class VariableJumpingPlayer extends Player {
 		switch(key) {
 			case FlxKey.UP:
 				boosted = true;
-				velocity.y = jumpSpeed * 1.5;
+				velocity.y = verticalBoostSpeed;
 
 			case FlxKey.RIGHT:
 				boosted = true;
-				velocity.y = jumpSpeed * 0.75;
+				velocity.y = horizontalLiftSpeed;
 
 			case FlxKey.LEFT:
 				boosted = true;
-				velocity.y = jumpSpeed * 0.75;
+				velocity.y = horizontalLiftSpeed;
 
 			case FlxKey.DOWN:
 				boosted = true;
-				velocity.y = jumpSpeed * -2.5;
+				velocity.y = -verticalBoostSpeed;
 
 			default:
 		}
@@ -140,5 +147,9 @@ class VariableJumpingPlayer extends Player {
 			lastBoostBtn = null;
 			boosted = false;
 		}
+	}
+	override public function jumpInVehicle(veh:Vehicle):Void {
+		super.jumpInVehicle(veh);
+		boosted = false;
 	}
 }

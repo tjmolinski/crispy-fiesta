@@ -143,7 +143,7 @@ class Player extends FlxSprite implements LivingThing {
 		}
 		
 		if (FlxG.keys.anyJustPressed([shootBtn])) {
-			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, velocity.x, direction, this);
+			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction, this);
 		}
 	}
 
@@ -209,7 +209,7 @@ class Player extends FlxSprite implements LivingThing {
 		y += height * 0.5;
 		updateHitbox();
 		halfHeight = height / 2;
-		//maxVelocity.set(xCrouchMaxVel, yMaxVel);
+		maxVelocity.set(xCrouchMaxVel, yMaxVel);
 	}
 	
 	public function exitProneState() {
@@ -217,7 +217,7 @@ class Player extends FlxSprite implements LivingThing {
 		y -= height;
 		updateHitbox();
 		halfHeight = height / 2;
-		//maxVelocity.set(xMaxVel, yMaxVel);
+		maxVelocity.set(xMaxVel, yMaxVel);
 	}
 	
 	public override function kill():Void {
