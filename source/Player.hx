@@ -56,6 +56,10 @@ class Player extends FlxSprite implements LivingThing {
 	public var escapeBtn:FlxKey = FlxKey.C;
 	public var nameType:String = "player";
 	public var tileMap:FlxTilemap;
+
+	public var gun: Gun;
+	public var gunOffsetX: Float = 16;
+	public var gunOffsetY: Float = 8;
 	
 	override public function new(X:Int, Y:Int, _width:Float, _height:Float, _bullets:FlxTypedGroup<Bullet>, _tileMap:FlxTilemap) {
 		super(X, Y);
@@ -222,6 +226,7 @@ class Player extends FlxSprite implements LivingThing {
 	
 	public override function kill():Void {
 		isDead = true;
+		gun.kill();
 		super.kill();
 	}
 
@@ -229,6 +234,7 @@ class Player extends FlxSprite implements LivingThing {
 		isInVehicle = true;
 		vehicle = veh;
 		vehicle.setDriver(this);
+		gun.visible = false; //XXX: Maybe better to kill and recycle
 	}
 
 	public function escapeVehicle():Void {
@@ -242,6 +248,11 @@ class Player extends FlxSprite implements LivingThing {
 		velocity.y = jumpSpeed;
 		acceleration.x = 0;
 		escapingVehicle = true;
+		gun.visible = true; //XXX: Maybe better to kill and recycle
+	}
+
+	public function giveGun(_gun: Gun) {
+		gun = _gun;
 	}
 }
 

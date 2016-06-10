@@ -33,6 +33,7 @@ class PlayState extends FlxState {
 	private var movingPlatforms:FlxGroup;
 	private var enemies:FlxTypedGroup<BasicEnemy>;
 	private var bullets:FlxTypedGroup<Bullet>;
+	private var pistols:FlxTypedGroup<Pistol>;
 	private var lasers:FlxTypedGroup<Laser>;
 	private var vehicles:FlxTypedGroup<Vehicle>;
 	private var bosses:FlxTypedGroup<Boss>;
@@ -134,18 +135,19 @@ class PlayState extends FlxState {
 
 		bosses = new FlxTypedGroup<Boss>(5);
 		add(bosses);
-		
-		bullets = new FlxTypedGroup<Bullet>(100);
-		add(bullets);
 
 		lasers = new FlxTypedGroup<Laser>(100);
 		add(lasers);
+
+		bullets = new FlxTypedGroup<Bullet>(100);
+		add(bullets);
 		
 		_map.loadEntities(function(type:String, data:Xml) {
 			var posX = Std.parseInt(data.get("x"));
 			var posY = Std.parseInt(data.get("y"));
 			switch(type) {
 				case "player":
+					//XXX: Need to decouple bullets and tilemap from constructor
 					//player = new LinearJumpingPlayer(posX, posY, 32, 32, bullets, _mWalls);
 					player = new VariableJumpingPlayer(posX, posY, 32, 32, bullets, _mWalls);
 					//player = new DoubleJumpingPlayer(posX, posY, 32, 32, bullets, _mWalls);
@@ -176,6 +178,10 @@ class PlayState extends FlxState {
 					
 			}
 		});
+
+		pistols = new FlxTypedGroup<Pistol>(10);
+		add(pistols);
+		pistols.recycle(Pistol).giveGun(player);
 		
 		//XXX: This is weird fix this in the future
 		enemies.forEach(function(enemy:BasicEnemy) {
