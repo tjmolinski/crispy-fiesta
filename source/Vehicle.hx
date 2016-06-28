@@ -15,6 +15,7 @@ class Vehicle extends FlxSprite implements LivingThing {
 	private var vehicleDrag:Float = 1600;
 	private var gravity:Float = 700;
 	private var jumpSpeed:Float = -300;
+	public var direction:Float = 0;
 	
 	public var halfWidth:Float;
 	public var halfHeight:Float;

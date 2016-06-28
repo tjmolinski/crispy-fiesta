@@ -1,6 +1,5 @@
 package;
 
-import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
@@ -26,14 +25,12 @@ class Bullet extends FlxSprite {
 	}
 	
 	override public function update(elapsed:Float):Void {
-		if (!alive)
-		{
+		if (!alive) {
 			exists = false;
 			return;
 		}
 		
-		if (!isOnScreen())
-		{
+		if (!isOnScreen()) {
 			kill();
 		}
 		
@@ -43,14 +40,12 @@ class Bullet extends FlxSprite {
 		super.update(elapsed);
 	}
 	
-	override public function kill():Void
-	{
+	override public function kill():Void {
 		owner = null;
 		super.kill();
 	}
 	
-	public function fireBullet(X:Float, Y:Float, dir:Float, _owner:LivingThing):Void
-	{
+	public function fireBullet(X:Float, Y:Float, dir:Float, _owner:LivingThing):Void {
 		super.reset(X-halfWidth, Y-halfHeight);
 		direction = dir;
 		owner = _owner;

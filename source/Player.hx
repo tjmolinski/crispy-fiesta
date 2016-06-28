@@ -50,6 +50,7 @@ class Player extends FlxSprite implements LivingThing {
 	public var halfHeight:Float;
 	
 	public var isDead:Bool = false;
+	public var isProne:Bool = false;
 	
 	public var shootBtn:FlxKey = FlxKey.Z;
 	public var jumpBtn:FlxKey = FlxKey.X;
@@ -58,8 +59,6 @@ class Player extends FlxSprite implements LivingThing {
 	public var tileMap:FlxTilemap;
 
 	public var gun: Gun;
-	public var gunOffsetX: Float = 16;
-	public var gunOffsetY: Float = 8;
 	
 	override public function new(X:Int, Y:Int, _width:Float, _height:Float, _bullets:FlxTypedGroup<Bullet>, _tileMap:FlxTilemap) {
 		super(X, Y);
@@ -135,8 +134,7 @@ class Player extends FlxSprite implements LivingThing {
 		acceleration.x = 0;
 		if (FlxG.keys.anyPressed([RIGHT])) {
 			flipX = false;
-			if(!isTouching(FlxObject.RIGHT) && !onLadder)
-			{
+			if(!isTouching(FlxObject.RIGHT) && !onLadder) {
 			acceleration.x += moveSpeed;
 			}
 		} else if (FlxG.keys.anyPressed([LEFT])) {
@@ -147,7 +145,7 @@ class Player extends FlxSprite implements LivingThing {
 		}
 		
 		if (FlxG.keys.anyJustPressed([shootBtn])) {
-			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction, this);
+			gun.shoot(bullets);
 		}
 	}
 
@@ -214,6 +212,7 @@ class Player extends FlxSprite implements LivingThing {
 		updateHitbox();
 		halfHeight = height / 2;
 		maxVelocity.set(xCrouchMaxVel, yMaxVel);
+		isProne = true;
 	}
 	
 	public function exitProneState() {
@@ -222,6 +221,7 @@ class Player extends FlxSprite implements LivingThing {
 		updateHitbox();
 		halfHeight = height / 2;
 		maxVelocity.set(xMaxVel, yMaxVel);
+		isProne = false;
 	}
 	
 	public override function kill():Void {

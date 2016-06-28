@@ -13,7 +13,7 @@ class VariableJumpingPlayer extends Player {
 	private var holdJumpTime:Float = 0.1;
 	private var jumpHoldAdder:Float = -10;
 
-	private var lastBoostBtn: FlxKey = null;
+	private var lastBoostBtn: FlxKey = FlxKey.NONE;
 	private var lastBoostPress: Int = 0;
 
 	private var doubleTapFrameLimit: Int = 15;
@@ -77,7 +77,7 @@ class VariableJumpingPlayer extends Player {
 			return;
 		}
 
-		if(lastBoostBtn != null) {
+		if(lastBoostBtn != FlxKey.NONE) {
 			performRocketBoost();
 		} else {
 			setupRocketBoost();
@@ -86,7 +86,7 @@ class VariableJumpingPlayer extends Player {
 
 	private function performRocketBoost():Void {
 		if(lastBoostPress > doubleTapFrameLimit && !boosted) {
-			lastBoostBtn = null;
+			lastBoostBtn = FlxKey.NONE;
 			return;
 		}
 
@@ -144,7 +144,7 @@ class VariableJumpingPlayer extends Player {
 		super.hitFloor();
 		if(boosted) {
 			lastBoostPress = 0;
-			lastBoostBtn = null;
+			lastBoostBtn = FlxKey.NONE;
 			boosted = false;
 		}
 	}

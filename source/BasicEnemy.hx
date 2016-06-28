@@ -27,6 +27,7 @@ class BasicEnemy extends FlxSprite implements LivingThing
 	public var runSpeed:Float = 100;
 	public var gravity:Float = 700;
 	public var jumpSpeed:Float = -300;
+	public var direction:Float = 0;
 	
 	public var tileMap:FlxTilemap;
 	
