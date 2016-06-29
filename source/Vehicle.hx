@@ -26,7 +26,6 @@ class Vehicle extends FlxSprite implements LivingThing {
 	public var fallThroughObj:FlxObject = null;
 
 	private var driver:Player;
-	private var bullets:FlxTypedGroup<Bullet>;
 	public var nameType:String = "vehicle";
 
 	private var healthPoints:Int = 3;
@@ -85,9 +84,8 @@ class Vehicle extends FlxSprite implements LivingThing {
 		}
 	}
 	
-	public function spawn(posX: Float, posY: Float, _bullets:FlxTypedGroup<Bullet>) {
+	public function spawn(posX: Float, posY: Float) {
 		super.reset(posX, posY);
-		bullets = _bullets;
 	}
 
 	public function handleMovement(elapsed: Float):Void {
@@ -137,7 +135,7 @@ class Vehicle extends FlxSprite implements LivingThing {
 			}
 			
 			if (FlxG.keys.anyJustPressed([driver.shootBtn])) {
-				bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, driver.direction, this);
+				PlayState.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, driver.direction, this);
 			}
 		}
 	}

@@ -81,14 +81,13 @@ class BasicEnemy extends FlxSprite implements LivingThing
 		super.destroy();
 	}
 	
-	public function setDependencies(player:Player, _map:FlxTilemap, _bullets:FlxTypedGroup<Bullet>):Void {
+	public function setDependencies(player:Player, _map:FlxTilemap):Void {
 		playerRef = player;
-		bullets = _bullets;
 		tileMap = _map;
 	}
 	
 	public function shootBullet():Void {
-		bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, flipX ? 180 : 0, this);
+		PlayState.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, flipX ? 180 : 0, this);
 	}
 	
 	public function hitByBullet(bullet: Bullet):Void {

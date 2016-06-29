@@ -3,7 +3,7 @@ package;
 import flixel.group.FlxGroup;
 import flixel.util.FlxColor;
 
-class Pistol extends Gun {
+class FlameGun extends Gun {
 
 	override public function new(?X:Float=0, ?Y:Float=0) {
 		super(X, Y);
@@ -18,10 +18,10 @@ class Pistol extends Gun {
 		cooldownTime = 0.1;
 	}
 	
-	override public function shoot():Void {
+	override public function shoot(bullets: FlxTypedGroup<Bullet>):Void {
 		if(!inCooldown) {
 			inCooldown = true;
-			shootBullet(owner.direction);
+			shootBullet(bullets, owner.direction);
 		}
 	}
 }

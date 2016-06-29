@@ -16,6 +16,10 @@ class Gun extends FlxSprite {
 	public var gunOffsetX: Float;
 	public var gunOffsetY: Float;
 
+	private var cooldownTime:Float = 0.0;
+	private var cooldownBuffer:Float = 0.0;
+	private var inCooldown:Bool = false;
+
 	override public function new(?X:Float=0, ?Y:Float=0) {
 		super(X, Y);
 	}
@@ -50,6 +54,15 @@ class Gun extends FlxSprite {
 			x = targetX;
 			y = targetY;
 		}
+
+		if(inCooldown) {
+			if(cooldownBuffer >= cooldownTime) {
+				cooldownBuffer = 0;
+				inCooldown = false;
+			} else {
+				cooldownBuffer += elapsed;
+			}
+		}
 		
 		super.update(elapsed);
 	}
@@ -65,13 +78,13 @@ class Gun extends FlxSprite {
 		owner.giveGun(this);
 	}
 
-	public function shootBullet(bullets: FlxTypedGroup<Bullet>, direction: Float):Void {
+	public function shootBullet(direction: Float):Void {
 		if(owner.direction == 90 && owner.isProne) {
-			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, owner.flipX ? 180 : 0, owner);
+			PlayState.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, owner.flipX ? 180 : 0, owner);
 		} else {
-			bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction, owner);
+			PlayState.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction, owner);
 		}
 	}
 
-	public function shoot(bullets: FlxTypedGroup<Bullet>): Void {}
+	public function shoot():Void{}
 }

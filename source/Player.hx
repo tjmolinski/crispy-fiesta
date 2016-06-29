@@ -39,7 +39,6 @@ class Player extends FlxSprite implements LivingThing {
 	private var onLadder:Bool = false;
 	private var ladderSpeed:Float = 30.0;
 	
-	private var bullets:FlxTypedGroup<Bullet>;
 	public var direction:Float = 0;
 	private var ladderX:Float;
 
@@ -60,10 +59,9 @@ class Player extends FlxSprite implements LivingThing {
 
 	public var gun: Gun;
 	
-	override public function new(X:Int, Y:Int, _width:Float, _height:Float, _bullets:FlxTypedGroup<Bullet>, _tileMap:FlxTilemap) {
+	override public function new(X:Int, Y:Int, _width:Float, _height:Float, _tileMap:FlxTilemap) {
 		super(X, Y);
 		
-		bullets = _bullets;
 		tileMap = _tileMap;
 		
 		makeGraphic(cast(_width, Int), cast(_height, Int), FlxColor.RED);
@@ -145,7 +143,7 @@ class Player extends FlxSprite implements LivingThing {
 		}
 		
 		if (FlxG.keys.anyJustPressed([shootBtn])) {
-			gun.shoot(bullets);
+			gun.shoot();
 		}
 	}
 

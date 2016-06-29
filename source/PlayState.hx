@@ -32,8 +32,10 @@ class PlayState extends FlxState {
 	private var ladders:FlxGroup;
 	private var movingPlatforms:FlxGroup;
 	private var enemies:FlxTypedGroup<BasicEnemy>;
-	private var bullets:FlxTypedGroup<Bullet>;
+	static public var bullets:FlxTypedGroup<Bullet>;
 	private var pistols:FlxTypedGroup<Pistol>;
+	private var shotguns:FlxTypedGroup<Shotgun>;
+	private var machineguns:FlxTypedGroup<MachineGun>;
 	private var lasers:FlxTypedGroup<Laser>;
 	private var vehicles:FlxTypedGroup<Vehicle>;
 	private var bosses:FlxTypedGroup<Boss>;
@@ -139,18 +141,17 @@ class PlayState extends FlxState {
 		lasers = new FlxTypedGroup<Laser>(100);
 		add(lasers);
 
-		bullets = new FlxTypedGroup<Bullet>(100);
-		add(bullets);
+		PlayState.bullets = new FlxTypedGroup<Bullet>(100);
+		add(PlayState.bullets);
 		
 		_map.loadEntities(function(type:String, data:Xml) {
 			var posX = Std.parseInt(data.get("x"));
 			var posY = Std.parseInt(data.get("y"));
 			switch(type) {
 				case "player":
-					//XXX: Need to decouple bullets and tilemap from constructor
-					//player = new LinearJumpingPlayer(posX, posY, 32, 32, bullets, _mWalls);
-					player = new VariableJumpingPlayer(posX, posY, 32, 32, bullets, _mWalls);
-					//player = new DoubleJumpingPlayer(posX, posY, 32, 32, bullets, _mWalls);
+					//player = new LinearJumpingPlayer(posX, posY, 32, 32, _mWalls);
+					player = new VariableJumpingPlayer(posX, posY, 32, 32, _mWalls);
+					//player = new DoubleJumpingPlayer(posX, posY, 32, 32, _mWalls);
 					add(player);
 				case "ladder":
 					ladders.add(new Ladder(posX, posY, data.get("isHead") == "True"));
@@ -174,18 +175,24 @@ class PlayState extends FlxState {
 					var height : Int = Std.parseInt(data.get("height"));
 					killPits.recycle(KillPit).spawn(posX, posY, width, height);
 				case "vehicle":
-					vehicles.recycle(Vehicle).spawn(posX, posY, bullets);
+					vehicles.recycle(Vehicle).spawn(posX, posY);
 					
 			}
 		});
 
 		pistols = new FlxTypedGroup<Pistol>(10);
 		add(pistols);
+		shotguns = new FlxTypedGroup<Shotgun>(10);
+		add(shotguns);
+		machineguns = new FlxTypedGroup<MachineGun>(10);
+		add(machineguns);
+		// shotguns.recycle(Shotgun).giveGun(player);
+		// machineguns.recycle(MachineGun).giveGun(player);
 		pistols.recycle(Pistol).giveGun(player);
 		
 		//XXX: This is weird fix this in the future
 		enemies.forEach(function(enemy:BasicEnemy) {
-			enemy.setDependencies(player, _mWalls, bullets);
+			enemy.setDependencies(player, _mWalls);
 		});
 
 		bosses.forEach(function(boss:Boss) {
@@ -277,7 +284,7 @@ class PlayState extends FlxState {
 		}
 
 		var bulletColor = new FlxColor(0xffffffcc);
-		bullets.forEachExists(function(bullet: Bullet) {
+		PlayState.bullets.forEachExists(function(bullet: Bullet) {
 			for (i in 0...2) {
 				bulletColor.alpha = 100 + (50 * i);
 
