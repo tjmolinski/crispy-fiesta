@@ -135,7 +135,7 @@ class Vehicle extends FlxSprite implements LivingThing {
 			}
 			
 			if (FlxG.keys.anyJustPressed([driver.shootBtn])) {
-				PlayState.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, driver.direction, this);
+				GameObjects.instance.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, driver.direction, this);
 			}
 		}
 	}

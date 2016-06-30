@@ -32,8 +32,6 @@ class Boss extends FlxNestedSprite implements LivingThing {
 	public var halfWidth:Float;
 	public var halfHeight:Float;
 	
-	public var playerRef:Player;
-	private var lasers:FlxTypedGroup<Laser>;
 	public var nameType:String = "boss";
 
 	private var healthPoints:Int = 25;
@@ -94,7 +92,7 @@ class Boss extends FlxNestedSprite implements LivingThing {
 
 	private function unlockCamera() {
 		if(FlxG.camera.target == offsetObject) {
-			FlxG.camera.follow(playerRef, FlxCameraFollowStyle.PLATFORMER, 0.1);
+			FlxG.camera.follow(GameObjects.instance.player, FlxCameraFollowStyle.PLATFORMER, 0.1);
 			FlxG.camera.targetOffset.set(100, 0);
 		}
 	}
@@ -105,13 +103,8 @@ class Boss extends FlxNestedSprite implements LivingThing {
 		super.destroy();
 	}
 	
-	public function setDependencies(player:Player, _lasers:FlxTypedGroup<Laser>):Void {
-		playerRef = player;
-		lasers = _lasers;
-	}
-	
 	public function shootLaser(yOffset):Void {
-		lasers.recycle(Laser).fireLaser(x+halfWidth, y+yOffset, this);
+		GameObjects.instance.lasers.recycle(Laser).fireLaser(x+halfWidth, y+yOffset, this);
 	}
 	
 	public function hitByBullet(bullet: Bullet):Void {

@@ -55,14 +55,11 @@ class Player extends FlxSprite implements LivingThing {
 	public var jumpBtn:FlxKey = FlxKey.X;
 	public var escapeBtn:FlxKey = FlxKey.C;
 	public var nameType:String = "player";
-	public var tileMap:FlxTilemap;
 
 	public var gun: Gun;
 	
-	override public function new(X:Int, Y:Int, _width:Float, _height:Float, _tileMap:FlxTilemap) {
+	override public function new(X:Int, Y:Int, _width:Float, _height:Float) {
 		super(X, Y);
-		
-		tileMap = _tileMap;
 		
 		makeGraphic(cast(_width, Int), cast(_height, Int), FlxColor.RED);
 		drag.set(playerDrag, playerDrag);
@@ -260,11 +257,11 @@ private class Conditions {
 	}
 	
 	public static function isStanding(owner:Player):Bool {
-		var xLeftMostPos = Math.floor(owner.x / PlayState.TILE_WIDTH);
-		var xRightMostPos = Math.floor((owner.x + owner.width) / PlayState.TILE_WIDTH);
-		var yTile = Math.floor((owner.y) / PlayState.TILE_HEIGHT);
-		var leftSideTileId = owner.tileMap.getTile(xLeftMostPos, yTile-1);
-		var rightSideTileId = owner.tileMap.getTile(xRightMostPos, yTile-1);
+		var xLeftMostPos = Math.floor(owner.x / GameObjects.TILE_WIDTH);
+		var xRightMostPos = Math.floor((owner.x + owner.width) / GameObjects.TILE_WIDTH);
+		var yTile = Math.floor((owner.y) / GameObjects.TILE_HEIGHT);
+		var leftSideTileId = GameObjects.instance.mapData.getTile(xLeftMostPos, yTile-1);
+		var rightSideTileId = GameObjects.instance.mapData.getTile(xRightMostPos, yTile-1);
 		
 		return !isProne(owner) && leftSideTileId == 0 && rightSideTileId == 0;
 	}

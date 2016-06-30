@@ -5,7 +5,6 @@ import flixel.math.FlxPoint;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
-import flixel.tile.FlxTilemap;
 import flixel.FlxG;
 import flixel.group.FlxGroup;
 	
@@ -29,12 +28,9 @@ class BasicEnemy extends FlxSprite implements LivingThing
 	public var jumpSpeed:Float = -300;
 	public var direction:Float = 0;
 	
-	public var tileMap:FlxTilemap;
-	
 	public var halfWidth:Float;
 	public var halfHeight:Float;
 	
-	public var playerRef:Player;
 	private var bullets:FlxTypedGroup<Bullet>;
 	public var nameType:String = "basic enemy";
 	
@@ -81,13 +77,8 @@ class BasicEnemy extends FlxSprite implements LivingThing
 		super.destroy();
 	}
 	
-	public function setDependencies(player:Player, _map:FlxTilemap):Void {
-		playerRef = player;
-		tileMap = _map;
-	}
-	
 	public function shootBullet():Void {
-		PlayState.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, flipX ? 180 : 0, this);
+		GameObjects.instance.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, flipX ? 180 : 0, this);
 	}
 	
 	public function hitByBullet(bullet: Bullet):Void {
@@ -101,19 +92,19 @@ class BasicEnemy extends FlxSprite implements LivingThing
 
 private class Conditions {
 	public static function seeEnemy(Owner:BasicEnemy):Bool {
-		if (Owner.playerRef.x - Owner.x < 0 && !Owner.flipX) {
+		if (GameObjects.instance.player.x - Owner.x < 0 && !Owner.flipX) {
 			return false;
 		}
 		
-		if (Owner.playerRef.x - Owner.x > 0 && Owner.flipX) {
+		if (GameObjects.instance.player.x - Owner.x > 0 && Owner.flipX) {
 			return false;
 		}
 		
-		return Owner.tileMap.ray(Owner.getMidpoint(), Owner.playerRef.getMidpoint());
+		return GameObjects.instance.mapData.ray(Owner.getMidpoint(), GameObjects.instance.player.getMidpoint());
 	}
 	
 	public static function lostEnemy(Owner:BasicEnemy):Bool {
-		return !Owner.tileMap.ray(Owner.getMidpoint(), Owner.playerRef.getMidpoint());
+		return !GameObjects.instance.mapData.ray(Owner.getMidpoint(), GameObjects.instance.player.getMidpoint());
 	}
 }
 
@@ -123,9 +114,9 @@ private class Scout extends FlxFSMState<BasicEnemy> {
 	}
 	
 	override public function update(elapsed:Float, owner:BasicEnemy, fsm:FlxFSM<BasicEnemy>):Void {
-		var xTile = Math.floor((owner.x+owner.halfWidth) / PlayState.TILE_WIDTH);
-		var yTile = Math.floor((owner.y+owner.halfHeight) / PlayState.TILE_HEIGHT);
-		var tileId = owner.tileMap.getTile(xTile+(owner.flipX?-1:1), yTile+1);
+		var xTile = Math.floor((owner.x+owner.halfWidth) / GameObjects.TILE_WIDTH);
+		var yTile = Math.floor((owner.y+owner.halfHeight) / GameObjects.TILE_HEIGHT);
+		var tileId = GameObjects.instance.mapData.getTile(xTile+(owner.flipX?-1:1), yTile+1);
 		if (tileId == 0) {
 			owner.flipX = !owner.flipX;
 		}
