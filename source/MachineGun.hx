@@ -28,13 +28,13 @@ class MachineGun extends Gun {
 
 		if(inCooldown) {
 			if(cooldownBuffer > burst1Time && burstIdx == 0) {
-				shootBullet(owner.direction);
+				shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, Math.random()*2 - 1);
 				burstIdx++;
 			} else if(cooldownBuffer > burst2Time && burstIdx == 1) {
-				shootBullet(owner.direction);
+				shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, Math.random()*2 - 1);
 				burstIdx++;
 			} else if(cooldownBuffer > burst3Time && burstIdx == 2) {
-				shootBullet(owner.direction);
+				shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, Math.random()*2 - 1);
 				burstIdx++;
 			}
 		} else {
@@ -45,7 +45,7 @@ class MachineGun extends Gun {
 	override public function shoot():Void {
 		if(!inCooldown) {
 			inCooldown = true;
-			shootBullet(owner.direction);
+			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, Math.random()*2 - 1);
 		}
 	}
 }

@@ -77,12 +77,12 @@ class Gun extends FlxSprite {
 		owner = _owner;
 		owner.giveGun(this);
 	}
-
-	public function shootBullet(direction: Float):Void {
+	
+	public function shootBullet(bullet: Bullet, direction: Float, offset: Float):Void {
 		if(owner.direction == 90 && owner.isProne) {
-			GameObjects.instance.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, owner.flipX ? 180 : 0, owner);
+			bullet.fireBullet(x+halfWidth, y+halfHeight, owner.flipX ? 180 + offset : 0 + offset, owner);
 		} else {
-			GameObjects.instance.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, direction, owner);
+			bullet.fireBullet(x+halfWidth, y+halfHeight, direction + offset, owner);
 		}
 	}
 

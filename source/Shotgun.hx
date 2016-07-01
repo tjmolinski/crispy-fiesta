@@ -21,11 +21,11 @@ class Shotgun extends Gun {
 	override public function shoot():Void {
 		if(!inCooldown) {
 			inCooldown = true;
-			shootBullet(owner.direction - 20);
-			shootBullet(owner.direction - 10);
-			shootBullet(owner.direction);
-			shootBullet(owner.direction + 10);
-			shootBullet(owner.direction + 20);
+			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, -20);
+			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, -10);
+			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, 0);
+			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, 10);
+			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, 20);
 		}
 	}
 }

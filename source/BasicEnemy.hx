@@ -78,7 +78,7 @@ class BasicEnemy extends FlxSprite implements LivingThing
 	}
 	
 	public function shootBullet():Void {
-		GameObjects.instance.bullets.recycle(Bullet).fireBullet(x+halfWidth, y+halfHeight, flipX ? 180 : 0, this);
+		GameObjects.instance.pistolBullets.recycle(PistolBullet).fireBullet(x+halfWidth, y+halfHeight, flipX ? 180 : 0, this);
 	}
 	
 	public function hitByBullet(bullet: Bullet):Void {

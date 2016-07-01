@@ -48,7 +48,8 @@ class PlayState extends FlxState {
 	}
 
 	override public function destroy():Void {
-		GameObjects.instance.bullets.clear();
+		GameObjects.instance.pistolBullets.clear();
+		GameObjects.instance.flameBullets.clear();
 		GameObjects.instance.movingPlatforms.clear();
 		GameObjects.instance.ladders.clear();
 		GameObjects.instance.enemies.clear();
@@ -58,10 +59,14 @@ class PlayState extends FlxState {
 		GameObjects.instance.enemies.clear();
 		GameObjects.instance.bosses.clear();
 		GameObjects.instance.lasers.clear();
-		GameObjects.instance.bullets.clear();
 		GameObjects.instance.pistols.clear();
 		GameObjects.instance.shotguns.clear();
 		GameObjects.instance.machineguns.clear();
+		GameObjects.instance.flameguns.clear();
+		GameObjects.instance.rawketLawnChairs.clear();
+		GameObjects.instance.spreaderPickup.clear();
+		GameObjects.instance.machinegunPickup.clear();
+		GameObjects.instance.rawketlawnchairPickup.clear();
 		remove(GameObjects.instance.mapData);
 		remove(GameObjects.instance.ladders);
 		remove(GameObjects.instance.movingPlatforms);
@@ -71,10 +76,16 @@ class PlayState extends FlxState {
 		remove(GameObjects.instance.enemies);
 		remove(GameObjects.instance.bosses);
 		remove(GameObjects.instance.lasers);
-		remove(GameObjects.instance.bullets);
+		remove(GameObjects.instance.pistolBullets);
+		remove(GameObjects.instance.flameBullets);
 		remove(GameObjects.instance.pistols);
 		remove(GameObjects.instance.shotguns);
 		remove(GameObjects.instance.machineguns);
+		remove(GameObjects.instance.flameguns);
+		remove(GameObjects.instance.spreaderPickup);
+		remove(GameObjects.instance.machinegunPickup);
+		remove(GameObjects.instance.flamegunPickup);
+		remove(GameObjects.instance.rawketlawnchairPickup);
 	}
 	
 	override public function update(elapsed:Float):Void {
@@ -136,6 +147,10 @@ class PlayState extends FlxState {
 		add(GameObjects.instance.movingPlatforms);
 		add(GameObjects.instance.enemies);
 		add(GameObjects.instance.bosses);
+		add(GameObjects.instance.spreaderPickup);
+		add(GameObjects.instance.machinegunPickup);
+		add(GameObjects.instance.flamegunPickup);
+		add(GameObjects.instance.rawketlawnchairPickup);
 
 		GameObjects.instance.ogmoMap.loadEntities(function(type:String, data:Xml) {
 			var posX = Std.parseInt(data.get("x"));
@@ -169,6 +184,14 @@ class PlayState extends FlxState {
 					GameObjects.instance.killPits.recycle(KillPit).spawn(posX, posY, width, height);
 				case "vehicle":
 					GameObjects.instance.vehicles.recycle(Vehicle).spawn(posX, posY);
+				case "spreaderPickup":
+					GameObjects.instance.spreaderPickup.recycle(SpreaderGunPickup).spawn(posX, posY);
+				case "machinegunPickup":
+					GameObjects.instance.machinegunPickup.recycle(MachineGunPickup).spawn(posX, posY);
+				case "flamegunPickup":
+					GameObjects.instance.flamegunPickup.recycle(FlameGunPickup).spawn(posX, posY);
+				case "rawketLawnChairPickup":
+					GameObjects.instance.rawketlawnchairPickup.recycle(RawketLawnChairPickup).spawn(posX, posY);
 					
 			}
 		});
@@ -177,11 +200,11 @@ class PlayState extends FlxState {
 		add(GameObjects.instance.pistols);
 		add(GameObjects.instance.shotguns);
 		add(GameObjects.instance.machineguns);
-		add(GameObjects.instance.bullets);
-
-		// shotguns.recycle(Shotgun).giveGun(GameObjects.instance.player);
-		// machineguns.recycle(MachineGun).giveGun(GameObjects.instance.player);
-		GameObjects.instance.pistols.recycle(Pistol).giveGun(GameObjects.instance.player);
+		add(GameObjects.instance.flameguns);
+		add(GameObjects.instance.rawketLawnChairs);
+		add(GameObjects.instance.pistolBullets);
+		add(GameObjects.instance.flameBullets);
+		add(GameObjects.instance.rawketBullets);
 		
 		toggleEntitiesActive(false);
 	}
@@ -268,7 +291,7 @@ class PlayState extends FlxState {
 		}
 
 		var bulletColor = new FlxColor(0xffffffcc);
-		GameObjects.instance.bullets.forEachExists(function(bullet: Bullet) {
+		GameObjects.instance.pistolBullets.forEachExists(function(bullet: Bullet) {
 			for (i in 0...2) {
 				bulletColor.alpha = 100 + (50 * i);
 
@@ -312,18 +335,42 @@ class PlayState extends FlxState {
 		}
 	}
 	
+	private function pickupCollision(thing:GunPickup, _player:Player):Void {
+		if(cast(thing, FlxBasic).alive && _player.alive) {
+			thing.pickup(_player);
+		}
+	}
+	
 	public function updateGamingState(elapsed):Void {
 		FlxG.camera.minScrollX = FlxG.camera.scroll.x;
 
-		FlxG.overlap(GameObjects.instance.bullets, GameObjects.instance.player, bulletCollision);
-		FlxG.overlap(GameObjects.instance.bullets, GameObjects.instance.enemies, bulletCollision);
-		FlxG.overlap(GameObjects.instance.bullets, GameObjects.instance.vehicles, bulletCollision);
+		FlxG.overlap(GameObjects.instance.pistolBullets, GameObjects.instance.player, bulletCollision);
+		FlxG.overlap(GameObjects.instance.pistolBullets, GameObjects.instance.enemies, bulletCollision);
+		FlxG.overlap(GameObjects.instance.pistolBullets, GameObjects.instance.vehicles, bulletCollision);
+		FlxG.overlap(GameObjects.instance.flameBullets, GameObjects.instance.player, bulletCollision);
+		FlxG.overlap(GameObjects.instance.flameBullets, GameObjects.instance.enemies, bulletCollision);
+		FlxG.overlap(GameObjects.instance.flameBullets, GameObjects.instance.vehicles, bulletCollision);
+		FlxG.overlap(GameObjects.instance.rawketBullets, GameObjects.instance.player, bulletCollision);
+		FlxG.overlap(GameObjects.instance.rawketBullets, GameObjects.instance.enemies, bulletCollision);
+		FlxG.overlap(GameObjects.instance.rawketBullets, GameObjects.instance.vehicles, bulletCollision);
 
 		FlxG.overlap(GameObjects.instance.lasers, GameObjects.instance.player, laserCollision);
 		FlxG.overlap(GameObjects.instance.lasers, GameObjects.instance.vehicles, laserCollision);
 
+		FlxG.overlap(GameObjects.instance.spreaderPickup, GameObjects.instance.player, pickupCollision);
+		FlxG.overlap(GameObjects.instance.machinegunPickup, GameObjects.instance.player, pickupCollision);
+		FlxG.overlap(GameObjects.instance.flamegunPickup, GameObjects.instance.player, pickupCollision);
+		FlxG.overlap(GameObjects.instance.rawketlawnchairPickup, GameObjects.instance.player, pickupCollision);
+
 		GameObjects.instance.bosses.forEach(function(boss: Boss) {
-			FlxG.overlap(GameObjects.instance.bullets, boss.weakSpot, function(bullet:Bullet, thing:FlxSprite) {
+			//XXX: DRY it up
+			FlxG.overlap(GameObjects.instance.pistolBullets, boss.weakSpot, function(bullet:Bullet, thing:FlxSprite) {
+				bulletCollision(bullet, boss);
+			});
+			FlxG.overlap(GameObjects.instance.flameBullets, boss.weakSpot, function(bullet:Bullet, thing:FlxSprite) {
+				bulletCollision(bullet, boss);
+			});
+			FlxG.overlap(GameObjects.instance.rawketBullets, boss.weakSpot, function(bullet:Bullet, thing:FlxSprite) {
 				bulletCollision(bullet, boss);
 			});
 			FlxG.overlap(GameObjects.instance.player, boss.body, function(_pl:Player, thing:FlxSprite) {
@@ -461,7 +508,9 @@ class PlayState extends FlxState {
 		GameObjects.instance.ladders.active = tf;
 		GameObjects.instance.movingPlatforms.active = tf;
 		GameObjects.instance.enemies.active = tf;
-		GameObjects.instance.bullets.active = tf;
+		GameObjects.instance.pistolBullets.active = tf;
+		GameObjects.instance.flameBullets.active = tf;
+		GameObjects.instance.rawketBullets.active = tf;
 		GameObjects.instance.player.active = tf;
 		GameObjects.instance.vehicles.active = tf;
 	}

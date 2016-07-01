@@ -77,6 +77,8 @@ class Player extends FlxSprite implements LivingThing {
 			.add(DrivingVehicle, Standing, Conditions.isEscapingVehicle)
 			.addGlobal(Death, Conditions.isDead)
 			.start(Standing);
+
+		GameObjects.instance.pistols.recycle(Pistol).giveGun(this);
 	}
 
 	override public function update(elapsed:Float):Void {
@@ -247,6 +249,10 @@ class Player extends FlxSprite implements LivingThing {
 	}
 
 	public function giveGun(_gun: Gun) {
+		if(gun != null) {
+			gun.kill();
+		}
+
 		gun = _gun;
 	}
 }

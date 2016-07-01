@@ -21,7 +21,7 @@ class Pistol extends Gun {
 	override public function shoot():Void {
 		if(!inCooldown) {
 			inCooldown = true;
-			shootBullet(owner.direction);
+			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, Math.random() * 2 - 1);
 		}
 	}
 }
