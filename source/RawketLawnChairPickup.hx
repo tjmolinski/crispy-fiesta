@@ -6,7 +6,7 @@ class RawketLawnChairPickup extends GunPickup {
 	override public function new() {
 		super();
 		
-		makeGraphic(32, 32, FlxColor.BLACK);
+		loadGraphic("assets/images/rawketpickup.png", false, 32, 32);
 		halfWidth = 16;
 		halfHeight = 16;
 	}

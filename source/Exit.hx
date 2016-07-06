@@ -11,7 +11,7 @@ class Exit extends FlxSprite {
 	override public function new() {
 		super();
 		
-		makeGraphic(1, 1, FlxColor.PURPLE);
+		loadGraphic("assets/images/exit.png", false, 70, 70);
 	}
 	
 	override public function update(elapsed: Float):Void {

@@ -107,35 +107,31 @@ class PlayState extends FlxState {
 	}
 
 	private function createTileMap():Void {
-		GameObjects.instance.ogmoMap = new FlxOgmoLoader("assets/data/test_level.oel");
-		GameObjects.instance.mapData = GameObjects.instance.ogmoMap.loadTilemap("assets/images/level_tiles.png", GameObjects.TILE_WIDTH, GameObjects.TILE_HEIGHT, "tiles");
+		GameObjects.instance.ogmoMap = new FlxOgmoLoader("assets/data/test_level3.oel");
+		GameObjects.instance.mapData = GameObjects.instance.ogmoMap.loadTilemap("assets/images/level_tile.png", GameObjects.TILE_WIDTH, GameObjects.TILE_HEIGHT, "tiles");
 
 		GameObjects.instance.mapData.setTileProperties(0, FlxObject.NONE);
 		GameObjects.instance.mapData.setTileProperties(1, FlxObject.UP);
 		GameObjects.instance.mapData.setTileProperties(2, FlxObject.RIGHT);
 		GameObjects.instance.mapData.setTileProperties(3, FlxObject.DOWN);
 		GameObjects.instance.mapData.setTileProperties(4, FlxObject.LEFT);
-		GameObjects.instance.mapData.setTileProperties(5, FlxObject.UP | FlxObject.RIGHT);
-		GameObjects.instance.mapData.setTileProperties(6, FlxObject.RIGHT | FlxObject.DOWN);
-		GameObjects.instance.mapData.setTileProperties(7, FlxObject.DOWN | FlxObject.LEFT);
-		
-		GameObjects.instance.mapData.setTileProperties(8, FlxObject.LEFT | FlxObject.UP);
-		GameObjects.instance.mapData.setTileProperties(9, FlxObject.LEFT | FlxObject.UP | FlxObject.RIGHT);
-		GameObjects.instance.mapData.setTileProperties(10, FlxObject.UP | FlxObject.RIGHT | FlxObject.DOWN);
-		GameObjects.instance.mapData.setTileProperties(11, FlxObject.RIGHT | FlxObject.DOWN | FlxObject.LEFT);
-		GameObjects.instance.mapData.setTileProperties(12, FlxObject.UP | FlxObject.DOWN | FlxObject.LEFT);
-		GameObjects.instance.mapData.setTileProperties(13, FlxObject.RIGHT | FlxObject.LEFT);
-		GameObjects.instance.mapData.setTileProperties(14, FlxObject.UP | FlxObject.DOWN);
+
+		GameObjects.instance.mapData.setTileProperties(5, FlxObject.NONE);
+		GameObjects.instance.mapData.setTileProperties(6, FlxObject.UP | FlxObject.LEFT);
+		GameObjects.instance.mapData.setTileProperties(7, FlxObject.UP | FlxObject.RIGHT);
+		GameObjects.instance.mapData.setTileProperties(8, FlxObject.DOWN | FlxObject.LEFT);
+		GameObjects.instance.mapData.setTileProperties(9, FlxObject.DOWN | FlxObject.RIGHT);
+
+		GameObjects.instance.mapData.setTileProperties(10, FlxObject.NONE);
+		GameObjects.instance.mapData.setTileProperties(11, FlxObject.UP | FlxObject.DOWN);
+		GameObjects.instance.mapData.setTileProperties(12, FlxObject.RIGHT | FlxObject.LEFT);
+		GameObjects.instance.mapData.setTileProperties(13, FlxObject.NONE);
+		GameObjects.instance.mapData.setTileProperties(14, FlxObject.NONE);
+
 		GameObjects.instance.mapData.setTileProperties(15, FlxObject.NONE);
-		
-		GameObjects.instance.mapData.setTileProperties(16, FlxObject.UP, handleFallThrough); //Blue is jump throughable floor
-		GameObjects.instance.mapData.setTileProperties(17, FlxObject.NONE); //Yellow	
-		GameObjects.instance.mapData.setTileProperties(18, FlxObject.NONE); //Purple
-		GameObjects.instance.mapData.setTileProperties(19, FlxObject.NONE); //Orange
-		GameObjects.instance.mapData.setTileProperties(20, FlxObject.NONE);
-		GameObjects.instance.mapData.setTileProperties(21, FlxObject.NONE);
-		GameObjects.instance.mapData.setTileProperties(22, FlxObject.NONE);
-		GameObjects.instance.mapData.setTileProperties(23, FlxObject.NONE);
+		GameObjects.instance.mapData.setTileProperties(16, FlxObject.UP, handleFallThrough);
+		GameObjects.instance.mapData.setTileProperties(17, FlxObject.UP, handleFallThrough);
+		GameObjects.instance.mapData.setTileProperties(18, FlxObject.UP, handleFallThrough);
 	}
 	
 	private function createEntities():Void {

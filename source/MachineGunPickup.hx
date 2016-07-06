@@ -6,7 +6,7 @@ class MachineGunPickup extends GunPickup {
 	override public function new() {
 		super();
 		
-		makeGraphic(32, 32, FlxColor.BLUE);
+		loadGraphic("assets/images/machinegunpickup.png", false, 32, 32);
 		halfWidth = 16;
 		halfHeight = 16;
 	}

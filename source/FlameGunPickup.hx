@@ -6,7 +6,7 @@ class FlameGunPickup extends GunPickup {
 	override public function new() {
 		super();
 		
-		makeGraphic(32, 32, FlxColor.GRAY);
+		loadGraphic("assets/images/firepickup.png", false, 32, 32);
 		halfWidth = 16;
 		halfHeight = 16;
 	}
