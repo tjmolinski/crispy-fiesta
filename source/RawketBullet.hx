@@ -8,7 +8,11 @@ class RawketBullet extends Bullet {
 	override public function new() {
 		super();
 		
-		makeGraphic(16, 16, FlxColor.GREEN);
+		loadGraphic("assets/images/bullet.png", true, 6, 6);
+		animation.add("life", [0,1,2,3,4], 10, true);
+		animation.play("life");
+		scale.set(4, 4);
+		updateHitbox();
 		halfWidth = width / 2;
 		halfHeight = height / 2;
 	}

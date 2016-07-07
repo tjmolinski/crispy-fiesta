@@ -153,9 +153,9 @@ class PlayState extends FlxState {
 			var posY = Std.parseInt(data.get("y"));
 			switch(type) {
 				case "player":
-					//player = new LinearJumpingPlayer(posX, posY, 32, 32);
-					GameObjects.instance.player = new VariableJumpingPlayer(posX, posY, 32, 32);
-					//player = new DoubleJumpingPlayer(posX, posY, 32, 32);
+					//player = new LinearJumpingPlayer(posX, posY);
+					GameObjects.instance.player = new VariableJumpingPlayer(posX, posY);
+					//player = new DoubleJumpingPlayer(posX, posY);
 					add(GameObjects.instance.player);
 				case "ladder":
 					GameObjects.instance.ladders.add(new Ladder(posX, posY, data.get("isHead") == "True"));

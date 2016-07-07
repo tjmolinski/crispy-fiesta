@@ -50,6 +50,7 @@ class VariableJumpingPlayer extends Player {
 		}
 		
 		if (FlxG.keys.anyPressed([jumpBtn]) && (!singleJumped || !doubleJumped) && !jumpJammer) {
+			animation.play("jump");
 			if (FlxG.keys.anyJustPressed([jumpBtn])) {
 				setLadderState(false);
 				velocity.y = jumpSpeed;

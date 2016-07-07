@@ -58,16 +58,20 @@ class Player extends FlxSprite implements LivingThing {
 
 	public var gun: Gun;
 	
-	override public function new(X:Int, Y:Int, _width:Float, _height:Float) {
+	override public function new(X:Int, Y:Int) {
 		super(X, Y);
 		
-		makeGraphic(cast(_width, Int), cast(_height, Int), FlxColor.RED);
+		loadGraphic("assets/images/bunnysheet.png", true, 23, 32);
+		animation.add("run", [2, 3], 10, true);
+		animation.add("idle", [0, 1], 5, true);
+		animation.add("jump", [4], 0, false);
 		drag.set(playerDrag, playerDrag);
 		acceleration.y = gravity;
 		maxVelocity.set(xMaxVel, yMaxVel);
+		animation.frameIndex = 0;
 		
-		halfWidth = _width / 2;
-		halfHeight = _height / 2;
+		halfWidth = width / 2;
+		halfHeight = height / 2;
 		
 		fsm = new FlxFSM<Player>(this, new Standing());
 		fsm.transitions
@@ -130,15 +134,23 @@ class Player extends FlxSprite implements LivingThing {
 	private function handleRunningMovement(elapsed:Float):Void {
 		acceleration.x = 0;
 		if (FlxG.keys.anyPressed([RIGHT])) {
+			if (isTouching(FlxObject.DOWN)) {
+				animation.play("run");
+			}
 			flipX = false;
 			if(!isTouching(FlxObject.RIGHT) && !onLadder) {
-			acceleration.x += moveSpeed;
+				acceleration.x += moveSpeed;
 			}
 		} else if (FlxG.keys.anyPressed([LEFT])) {
+			if (isTouching(FlxObject.DOWN)) {
+				animation.play("run");
+			}
 			flipX = true;
 			if(!isTouching(FlxObject.LEFT) && !onLadder) {
 				acceleration.x -= moveSpeed;
 			}
+		} else if (isTouching(FlxObject.DOWN)) {
+			animation.play("idle");
 		}
 		
 		if (FlxG.keys.anyJustPressed([shootBtn])) {

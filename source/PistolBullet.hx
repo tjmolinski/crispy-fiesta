@@ -8,7 +8,10 @@ class PistolBullet extends Bullet {
 	override public function new() {
 		super();
 		
-		makeGraphic(8, 8, FlxColor.YELLOW);
+		loadGraphic("assets/images/bullet.png", true, 6, 6);
+		animation.add("life", [0,1,2,3,4], 10, true);
+		animation.play("life");
+		scale.set(1.5, 1.5);
 		halfWidth = width / 2;
 		halfHeight = height / 2;
 	}
