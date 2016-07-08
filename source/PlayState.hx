@@ -53,6 +53,7 @@ class PlayState extends FlxState {
 		GameObjects.instance.movingPlatforms.clear();
 		GameObjects.instance.ladders.clear();
 		GameObjects.instance.enemies.clear();
+		GameObjects.instance.spikes.clear();
 		GameObjects.instance.killPits.clear();
 		GameObjects.instance.exits.clear();
 		GameObjects.instance.vehicles.clear();
@@ -70,6 +71,7 @@ class PlayState extends FlxState {
 		remove(GameObjects.instance.mapData);
 		remove(GameObjects.instance.ladders);
 		remove(GameObjects.instance.movingPlatforms);
+		remove(GameObjects.instance.spikes);
 		remove(GameObjects.instance.killPits);
 		remove(GameObjects.instance.exits);
 		remove(GameObjects.instance.vehicles);
@@ -137,6 +139,7 @@ class PlayState extends FlxState {
 	private function createEntities():Void {
 		add(GameObjects.instance.mapData);
 		add(GameObjects.instance.ladders);
+		add(GameObjects.instance.spikes);
 		add(GameObjects.instance.killPits);
 		add(GameObjects.instance.exits);
 		add(GameObjects.instance.vehicles);
@@ -178,6 +181,8 @@ class PlayState extends FlxState {
 					var width : Int = Std.parseInt(data.get("width"));
 					var height : Int = Std.parseInt(data.get("height"));
 					GameObjects.instance.killPits.recycle(KillPit).spawn(posX, posY, width, height);
+				case "spike":
+					GameObjects.instance.spikes.recycle(Spike).spawn(posX, posY);
 				case "vehicle":
 					GameObjects.instance.vehicles.recycle(Vehicle).spawn(posX, posY);
 				case "spreaderPickup":
@@ -450,6 +455,10 @@ class PlayState extends FlxState {
 			if (_pl.y > killPit.y) {
 				_pl.kill();
 			}
+		});
+
+		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.spikes, function(_pl:Player, spike:Spike) {
+			_pl.kill();
 		});
 		
 		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.exits, function(_pl:Player, exit:Exit) {

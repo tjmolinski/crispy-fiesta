@@ -61,17 +61,16 @@ class Player extends FlxSprite implements LivingThing {
 	override public function new(X:Int, Y:Int) {
 		super(X, Y);
 		
-		loadGraphic("assets/images/bunnysheet.png", true, 23, 32);
-		animation.add("run", [2, 3], 10, true);
-		animation.add("idle", [0, 1], 5, true);
-		animation.add("jump", [4], 0, false);
+		loadGraphic("assets/images/dog.png", true, 64, 64);
+		animation.add("run", [0,1,2,3,4,5,6], 15, true);
+		animation.add("idle", [8,9], 3, true);
+		animation.add("jump", [7], 0, false);
 		drag.set(playerDrag, playerDrag);
 		acceleration.y = gravity;
 		maxVelocity.set(xMaxVel, yMaxVel);
-		animation.frameIndex = 0;
-		
-		halfWidth = width / 2;
-		halfHeight = height / 2;
+		animation.frameIndex = 8;
+
+		setNormalHitDimensions();
 		
 		fsm = new FlxFSM<Player>(this, new Standing());
 		fsm.transitions
@@ -91,6 +90,22 @@ class Player extends FlxSprite implements LivingThing {
 		checkPlayerLevelBounds();
 
 		super.update(elapsed);
+	}
+
+	private function setNormalHitDimensions():Void {
+		width = 32;
+		height = 32;
+		offset.set(16, 32);
+		halfWidth = width / 2;
+		halfHeight = height / 2;
+	}
+
+	private function setJumpingHitDimensions():Void {
+		width = 32;
+		height = 32;
+		offset.set(16, 24);
+		halfWidth = width / 2;
+		halfHeight = height / 2;
 	}
 
 	private function checkPlayerLevelBounds() {
@@ -118,6 +133,9 @@ class Player extends FlxSprite implements LivingThing {
 	private function handleFloorCheck():Void {
 		if (this.isTouching(FlxObject.DOWN)) {
 			this.hitFloor();
+			if(!isProne) {
+				setNormalHitDimensions();
+			}
 		}
 	}
 
@@ -218,7 +236,7 @@ class Player extends FlxSprite implements LivingThing {
 	public function enterProneState() {
 		scale.y = 0.5;
 		y += height * 0.5;
-		updateHitbox();
+		height *= 0.5;
 		halfHeight = height / 2;
 		maxVelocity.set(xCrouchMaxVel, yMaxVel);
 		isProne = true;
@@ -227,8 +245,7 @@ class Player extends FlxSprite implements LivingThing {
 	public function exitProneState() {
 		scale.y = 1;
 		y -= height;
-		updateHitbox();
-		halfHeight = height / 2;
+		setNormalHitDimensions();
 		maxVelocity.set(xMaxVel, yMaxVel);
 		isProne = false;
 	}

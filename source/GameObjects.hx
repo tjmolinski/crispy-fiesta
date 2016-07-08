@@ -27,6 +27,7 @@ class GameObjects {
 
 	public var vehicles:FlxTypedGroup<Vehicle>;
 
+	public var spikes:FlxTypedGroup<Spike>;
 	public var killPits:FlxTypedGroup<KillPit>;
 	public var exits:FlxTypedGroup<Exit>;
 
@@ -57,6 +58,7 @@ class GameObjects {
 		flameBullets = new FlxTypedGroup<FlameBullet>(100);
 		rawketBullets = new FlxTypedGroup<RawketBullet>(100);
 
+		spikes = new FlxTypedGroup<Spike>(100);
 		killPits = new FlxTypedGroup<KillPit>(100);
 		exits = new FlxTypedGroup<Exit>(3);
 
