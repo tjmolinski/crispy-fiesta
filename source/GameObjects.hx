@@ -3,8 +3,8 @@ package;
 import flixel.FlxObject;
 import flixel.group.FlxGroup;
 import flixel.group.FlxGroup;
-import flixel.tile.FlxTilemap;
 import flixel.addons.editors.ogmo.FlxOgmoLoader;
+import flixel.addons.tile.FlxTilemapExt;
 
 class GameObjects {
 	public static var instance(get, null):GameObjects;
@@ -20,7 +20,7 @@ class GameObjects {
 	public static var TILE_WIDTH:Int = 16;
 	public static var TILE_HEIGHT:Int = 16;
 	public var ogmoMap:FlxOgmoLoader;
-	public var mapData:FlxTilemap;
+	public var mapData:FlxTilemapExt;
 
 	public var enemies:FlxTypedGroup<BasicEnemy>;
 	public var bosses:FlxTypedGroup<Boss>;

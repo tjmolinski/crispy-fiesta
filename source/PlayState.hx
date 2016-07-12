@@ -19,6 +19,7 @@ import openfl.display.BlendMode;
 import flixel.FlxCamera;
 import flixel.addons.util.FlxFSM;
 import flixel.addons.editors.ogmo.FlxOgmoLoader;
+import flixel.addons.tile.FlxTilemapExt;
 
 using flixel.util.FlxSpriteUtil;
 
@@ -110,7 +111,15 @@ class PlayState extends FlxState {
 
 	private function createTileMap():Void {
 		GameObjects.instance.ogmoMap = new FlxOgmoLoader("assets/data/test_level3.oel");
-		GameObjects.instance.mapData = GameObjects.instance.ogmoMap.loadTilemap("assets/images/level_tile.png", GameObjects.TILE_WIDTH, GameObjects.TILE_HEIGHT, "tiles");
+		var ogmoData = GameObjects.instance.ogmoMap.loadTilemap("assets/images/level_tile.png", GameObjects.TILE_WIDTH, GameObjects.TILE_HEIGHT, "tiles");
+		GameObjects.instance.mapData = new FlxTilemapExt();
+		GameObjects.instance.mapData.loadMapFromArray(
+			ogmoData.getData(false),
+			ogmoData.widthInTiles,
+			ogmoData.heightInTiles,
+			"assets/images/level_tile.png",
+			GameObjects.TILE_WIDTH, GameObjects.TILE_HEIGHT
+			);
 
 		GameObjects.instance.mapData.setTileProperties(0, FlxObject.NONE);
 		GameObjects.instance.mapData.setTileProperties(1, FlxObject.UP);
@@ -134,6 +143,9 @@ class PlayState extends FlxState {
 		GameObjects.instance.mapData.setTileProperties(16, FlxObject.UP, handleFallThrough);
 		GameObjects.instance.mapData.setTileProperties(17, FlxObject.UP, handleFallThrough);
 		GameObjects.instance.mapData.setTileProperties(18, FlxObject.UP, handleFallThrough);
+
+		GameObjects.instance.mapData.setSlopes([21,22,23],[26,27,28],[36,37,38],[31,32,33]);
+		GameObjects.instance.mapData.setGentle([22,23,26,27,31,32,37,38],[21,28,33,36]);
 	}
 	
 	private function createEntities():Void {
