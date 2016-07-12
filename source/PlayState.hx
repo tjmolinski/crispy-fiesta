@@ -52,6 +52,7 @@ class PlayState extends FlxState {
 		GameObjects.instance.pistolBullets.clear();
 		GameObjects.instance.flameBullets.clear();
 		GameObjects.instance.movingPlatforms.clear();
+		GameObjects.instance.disappearingPlatforms.clear();
 		GameObjects.instance.ladders.clear();
 		GameObjects.instance.enemies.clear();
 		GameObjects.instance.spikes.clear();
@@ -72,6 +73,7 @@ class PlayState extends FlxState {
 		remove(GameObjects.instance.mapData);
 		remove(GameObjects.instance.ladders);
 		remove(GameObjects.instance.movingPlatforms);
+		remove(GameObjects.instance.disappearingPlatforms);
 		remove(GameObjects.instance.spikes);
 		remove(GameObjects.instance.killPits);
 		remove(GameObjects.instance.exits);
@@ -156,6 +158,7 @@ class PlayState extends FlxState {
 		add(GameObjects.instance.exits);
 		add(GameObjects.instance.vehicles);
 		add(GameObjects.instance.movingPlatforms);
+		add(GameObjects.instance.disappearingPlatforms);
 		add(GameObjects.instance.enemies);
 		add(GameObjects.instance.bosses);
 		add(GameObjects.instance.spreaderPickup);
@@ -180,6 +183,10 @@ class PlayState extends FlxState {
 					var moveX : Float = Std.parseInt(data.get("xMove"));
 					var moveY : Float = Std.parseInt(data.get("yMove"));
 					GameObjects.instance.movingPlatforms.add(new MovingPlatform(posX, posY, width, height, moveX, moveY));
+				case "disappearingPlatform":
+					var width : Int = Std.parseInt(data.get("width"));
+					var height : Int = Std.parseInt(data.get("height"));
+					GameObjects.instance.disappearingPlatforms.add(new DisappearingPlatform(posX, posY, width, height));
 				case "basicEnemy":
 					GameObjects.instance.enemies.recycle(BasicEnemy).spawn(posX, posY, data.get("walkLeft") == "True");
 				case "boss":
@@ -441,6 +448,18 @@ class PlayState extends FlxState {
 			return FlxObject.separate(veh, obj);
 		});
 		////////////////////////////////////////////////////////////////////////////////////////
+		///XXX: DRY these two functions up//////////////////////////////////////////////////
+		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.disappearingPlatforms, function(_pl:Player, obj:DisappearingPlatform) {
+			obj.startDisappear();
+		}, function(_pl:Player, obj:DisappearingPlatform) {
+			
+			if (obj.alpha <= 0.0) {
+				return false;
+			}
+			
+			return FlxObject.separate(_pl, obj);
+		});
+		////////////////////////////////////////////////////////////////////////////////////////
 
 		
 		var onLadder = false;
@@ -524,6 +543,7 @@ class PlayState extends FlxState {
 	public function toggleEntitiesActive(tf: Bool):Void {
 		GameObjects.instance.ladders.active = tf;
 		GameObjects.instance.movingPlatforms.active = tf;
+		GameObjects.instance.disappearingPlatforms.active = tf;
 		GameObjects.instance.enemies.active = tf;
 		GameObjects.instance.pistolBullets.active = tf;
 		GameObjects.instance.flameBullets.active = tf;

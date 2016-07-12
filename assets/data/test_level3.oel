@@ -69,5 +69,14 @@
     <spike id="36" x="160" y="224" />
     <spike id="37" x="176" y="224" />
     <basicEnemy id="38" x="2640" y="128" walkLeft="False" />
+    <disappearingPlatform id="39" x="1088" y="320" width="16" height="16" />
+    <disappearingPlatform id="40" x="1104" y="320" width="16" height="16" />
+    <disappearingPlatform id="41" x="1120" y="320" width="16" height="16" />
+    <disappearingPlatform id="42" x="1136" y="320" width="16" height="16" />
+    <disappearingPlatform id="43" x="1152" y="320" width="16" height="16" />
+    <disappearingPlatform id="44" x="1168" y="320" width="16" height="16" />
+    <disappearingPlatform id="45" x="1184" y="320" width="16" height="16" />
+    <disappearingPlatform id="46" x="1200" y="320" width="16" height="16" />
+    <disappearingPlatform id="47" x="1216" y="320" width="16" height="16" />
   </entities>
 </level>
