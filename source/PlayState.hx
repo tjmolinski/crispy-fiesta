@@ -53,6 +53,7 @@ class PlayState extends FlxState {
 		GameObjects.instance.flameBullets.clear();
 		GameObjects.instance.movingPlatforms.clear();
 		GameObjects.instance.disappearingPlatforms.clear();
+		GameObjects.instance.springyFloors.clear();
 		GameObjects.instance.ladders.clear();
 		GameObjects.instance.enemies.clear();
 		GameObjects.instance.spikes.clear();
@@ -74,6 +75,7 @@ class PlayState extends FlxState {
 		remove(GameObjects.instance.ladders);
 		remove(GameObjects.instance.movingPlatforms);
 		remove(GameObjects.instance.disappearingPlatforms);
+		remove(GameObjects.instance.springyFloors);
 		remove(GameObjects.instance.spikes);
 		remove(GameObjects.instance.killPits);
 		remove(GameObjects.instance.exits);
@@ -159,6 +161,7 @@ class PlayState extends FlxState {
 		add(GameObjects.instance.vehicles);
 		add(GameObjects.instance.movingPlatforms);
 		add(GameObjects.instance.disappearingPlatforms);
+		add(GameObjects.instance.springyFloors);
 		add(GameObjects.instance.enemies);
 		add(GameObjects.instance.bosses);
 		add(GameObjects.instance.spreaderPickup);
@@ -187,6 +190,10 @@ class PlayState extends FlxState {
 					var width : Int = Std.parseInt(data.get("width"));
 					var height : Int = Std.parseInt(data.get("height"));
 					GameObjects.instance.disappearingPlatforms.add(new DisappearingPlatform(posX, posY, width, height));
+				case "springyFloor":
+					var width : Int = Std.parseInt(data.get("width"));
+					var height : Int = Std.parseInt(data.get("height"));
+					GameObjects.instance.springyFloors.add(new SpringyFloor(posX, posY, width, height));
 				case "basicEnemy":
 					GameObjects.instance.enemies.recycle(BasicEnemy).spawn(posX, posY, data.get("walkLeft") == "True");
 				case "boss":
@@ -459,6 +466,11 @@ class PlayState extends FlxState {
 			
 			return FlxObject.separate(_pl, obj);
 		});
+		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.springyFloors, function(_pl:Player, obj:SpringyFloor) {
+			if(_pl.velocity.y > 0 && (_pl.y+_pl.halfHeight) < (obj.y)) {
+				_pl.springPlayer();
+			}
+		});
 		////////////////////////////////////////////////////////////////////////////////////////
 
 		
@@ -544,6 +556,7 @@ class PlayState extends FlxState {
 		GameObjects.instance.ladders.active = tf;
 		GameObjects.instance.movingPlatforms.active = tf;
 		GameObjects.instance.disappearingPlatforms.active = tf;
+		GameObjects.instance.springyFloors.active = tf;
 		GameObjects.instance.enemies.active = tf;
 		GameObjects.instance.pistolBullets.active = tf;
 		GameObjects.instance.flameBullets.active = tf;

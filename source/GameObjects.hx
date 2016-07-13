@@ -50,11 +50,13 @@ class GameObjects {
 	public var ladders:FlxGroup;
 	public var movingPlatforms:FlxGroup;
 	public var disappearingPlatforms:FlxGroup;
+	public var springyFloors:FlxGroup;
 
     public function new() {
 		ladders = new FlxGroup();
 		movingPlatforms = new FlxGroup();
 		disappearingPlatforms = new FlxGroup();
+		springyFloors = new FlxGroup();
 
 		pistolBullets = new FlxTypedGroup<PistolBullet>(100);
 		flameBullets = new FlxTypedGroup<FlameBullet>(100);

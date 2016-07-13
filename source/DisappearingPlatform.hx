@@ -57,6 +57,7 @@ private class Visible extends FlxFSMState<DisappearingPlatform> {
 	
 	override public function update(elapsed:Float, owner:DisappearingPlatform, fsm:FlxFSM<DisappearingPlatform>):Void {
 		if(owner.alpha <= 0.9) {
+			//TODO: Maybe have a little animation here
 			owner.alpha += 0.1;
 			if(owner.alpha > 1.0) {
 				owner.alpha = 1.0;
@@ -73,6 +74,7 @@ private class Visible extends FlxFSMState<DisappearingPlatform> {
 private class Invisible extends FlxFSMState<DisappearingPlatform> {
 	private var ticks:Int = 0;
 	private var respawnTime:Int = 250;
+	private var disappearSpeed:Float = 0.05;
 
 	override public function enter(owner:DisappearingPlatform, fsm:FlxFSM<DisappearingPlatform>):Void {
 		super.enter(owner ,fsm);
@@ -80,9 +82,9 @@ private class Invisible extends FlxFSMState<DisappearingPlatform> {
 	}
 	
 	override public function update(elapsed:Float, owner:DisappearingPlatform, fsm:FlxFSM<DisappearingPlatform>):Void {
-		if(owner.alpha >= 0.1) {
-			owner.alpha -= 0.1;
-			if(owner.alpha < 0.1) {
+		if(owner.alpha >= disappearSpeed) {
+			owner.alpha -= disappearSpeed;
+			if(owner.alpha < disappearSpeed) {
 				owner.alpha = 0.0;
 			}
 		}

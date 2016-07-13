@@ -92,6 +92,12 @@ class Player extends FlxSprite implements LivingThing {
 		super.update(elapsed);
 	}
 
+	public function springPlayer():Void {
+		velocity.y = jumpSpeed;
+		singleJumped = true;
+		doubleJumped = false;
+	}
+
 	private function setNormalHitDimensions():Void {
 		width = 32;
 		height = 32;
