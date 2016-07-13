@@ -96,6 +96,7 @@ class Player extends FlxSprite implements LivingThing {
 		velocity.y = jumpSpeed;
 		singleJumped = true;
 		doubleJumped = false;
+		boosted = false;
 	}
 
 	private function setNormalHitDimensions():Void {
@@ -179,6 +180,12 @@ class Player extends FlxSprite implements LivingThing {
 		
 		if (FlxG.keys.anyJustPressed([shootBtn])) {
 			gun.shoot();
+			if(gun.currentAmmo <= 0 && gun.type != "pistol") {
+				GameObjects.instance.pistols.recycle(Pistol).giveGun(this);
+				cast(FlxG.state, PlayState).ammoText.text = "Ammo: Infinity";
+			} else if(gun.type != "pistol") {
+				cast(FlxG.state, PlayState).ammoText.text = "Ammo: " + gun.currentAmmo;
+			}
 		}
 	}
 
@@ -289,6 +296,11 @@ class Player extends FlxSprite implements LivingThing {
 		}
 
 		gun = _gun;
+		if(gun.type == "pistol") {
+			cast(FlxG.state, PlayState).ammoText.text = "Ammo: Infinity";
+		} else {
+			cast(FlxG.state, PlayState).ammoText.text = "Ammo: " + gun.currentAmmo;
+		}
 	}
 }
 

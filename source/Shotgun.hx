@@ -16,10 +16,15 @@ class Shotgun extends Gun {
 		gunOffsetY = 0;
 
 		cooldownTime = 1.0;
+		setAmmo(5);
+		type = "shot gun";
 	}
 	
-	override public function shoot():Void {
+	override public function shoot():Bool {
 		if(!inCooldown) {
+			if(!super.shoot()) {
+				return false;
+			}
 			inCooldown = true;
 			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, -20);
 			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, -10);
@@ -27,5 +32,6 @@ class Shotgun extends Gun {
 			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, 10);
 			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, 20);
 		}
+		return false;
 	}
 }

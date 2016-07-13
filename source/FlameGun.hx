@@ -16,12 +16,18 @@ class FlameGun extends Gun {
 		gunOffsetY = 0;
 
 		cooldownTime = 0.5;
+		setAmmo(10);
+		type = "flame gun";
 	}
 	
-	override public function shoot():Void {
+	override public function shoot():Bool {
 		if(!inCooldown) {
+			if(!super.shoot()) {
+				return false;
+			}
 			inCooldown = true;
 			shootBullet(GameObjects.instance.flameBullets.recycle(FlameBullet), owner.direction, 0);
 		}
+		return false;
 	}
 }

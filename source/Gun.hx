@@ -19,6 +19,9 @@ class Gun extends FlxSprite {
 	private var cooldownTime:Float = 0.0;
 	private var cooldownBuffer:Float = 0.0;
 	private var inCooldown:Bool = false;
+	private var ammoCount:Int = 0;
+	public var currentAmmo:Int = 0;
+	public var type:String = '';
 
 	override public function new(?X:Float=0, ?Y:Float=0) {
 		super(X, Y);
@@ -86,5 +89,16 @@ class Gun extends FlxSprite {
 		}
 	}
 
-	public function shoot():Void{}
+	public function shoot():Bool {
+		if(currentAmmo <= 0) {
+			return false;
+		}
+		currentAmmo--;
+		return true;
+	}
+
+	public function setAmmo(newCount: Int):Void {
+		ammoCount = newCount;
+		currentAmmo = newCount;
+	}
 }

@@ -15,13 +15,19 @@ class RawketLawnChair extends Gun {
 		gunOffsetY = 0;
 
 		cooldownTime = 1.5;
+		setAmmo(5);
+		type = "rawket lawn chair";
 	}
 	
-	override public function shoot():Void {
+	override public function shoot():Bool {
 		if(!inCooldown) {
+			if(!super.shoot()) {
+				return false;
+			}
 			inCooldown = true;
 			shootBullet(GameObjects.instance.rawketBullets.recycle(RawketBullet), owner.direction, 0);
 		}
+		return false;
 	}
 	
 }

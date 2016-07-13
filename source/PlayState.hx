@@ -1,25 +1,21 @@
 package;
 
-import flash.external.ExternalInterface;
+import flixel.FlxBasic;
+import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
-import flixel.FlxBasic;
 import flixel.FlxState;
+import flixel.addons.editors.ogmo.FlxOgmoLoader;
 import flixel.addons.effects.chainable.FlxEffectSprite;
 import flixel.addons.effects.chainable.FlxGlitchEffect;
 import flixel.addons.effects.chainable.FlxTrailEffect;
 import flixel.addons.text.FlxTypeText;
-import flixel.group.FlxGroup;
-import flixel.group.FlxGroup;
-import flixel.math.FlxPoint;
-import flixel.tile.FlxTilemap;
-import flixel.util.FlxColor;
-import openfl.display.BlendMode;
-import flixel.FlxCamera;
-import flixel.addons.util.FlxFSM;
-import flixel.addons.editors.ogmo.FlxOgmoLoader;
 import flixel.addons.tile.FlxTilemapExt;
+import flixel.addons.util.FlxFSM;
+import flixel.addons.util.FlxFSM;
+import flixel.text.FlxText;
+import flixel.util.FlxColor;
 
 using flixel.util.FlxSpriteUtil;
 
@@ -38,6 +34,8 @@ class PlayState extends FlxState {
 	private var _glitch:FlxGlitchEffect;
 	
 	public var currentState:PlayingStates;
+
+	public var ammoText: FlxText;
 
 	override public function create():Void {
 		createTileMap();
@@ -93,6 +91,8 @@ class PlayState extends FlxState {
 		remove(GameObjects.instance.machinegunPickup);
 		remove(GameObjects.instance.flamegunPickup);
 		remove(GameObjects.instance.rawketlawnchairPickup);
+
+		remove(ammoText);
 	}
 	
 	override public function update(elapsed:Float):Void {
@@ -168,6 +168,9 @@ class PlayState extends FlxState {
 		add(GameObjects.instance.machinegunPickup);
 		add(GameObjects.instance.flamegunPickup);
 		add(GameObjects.instance.rawketlawnchairPickup);
+
+		ammoText = new FlxText(0, 0, "Ammo: Infinity", 20);
+		add(ammoText);
 
 		GameObjects.instance.ogmoMap.loadEntities(function(type:String, data:Xml) {
 			var posX = Std.parseInt(data.get("x"));
@@ -370,6 +373,9 @@ class PlayState extends FlxState {
 	
 	public function updateGamingState(elapsed):Void {
 		FlxG.camera.minScrollX = FlxG.camera.scroll.x;
+
+		//TODO: Remove this and make the hud render to camera from a different position
+		ammoText.x = FlxG.camera.scroll.x;
 
 		FlxG.overlap(GameObjects.instance.pistolBullets, GameObjects.instance.player, bulletCollision);
 		FlxG.overlap(GameObjects.instance.pistolBullets, GameObjects.instance.enemies, bulletCollision);

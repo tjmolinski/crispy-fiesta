@@ -16,12 +16,16 @@ class Pistol extends Gun {
 		gunOffsetY = 0;
 
 		cooldownTime = 0.1;
+		setAmmo(-1);
+		type = "pistol";
 	}
 	
-	override public function shoot():Void {
+	override public function shoot():Bool {
 		if(!inCooldown) {
+			super.shoot();
 			inCooldown = true;
 			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, Math.random() * 2 - 1);
 		}
+		return false;
 	}
 }

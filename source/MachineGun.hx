@@ -21,6 +21,8 @@ class MachineGun extends Gun {
 		gunOffsetY = 0;
 
 		cooldownTime = 0.25;
+		setAmmo(10);
+		type = "machine gun";
 	}
 
 	override public function update(elapsed: Float):Void {
@@ -42,10 +44,14 @@ class MachineGun extends Gun {
 		}
 	}
 	
-	override public function shoot():Void {
+	override public function shoot():Bool {
 		if(!inCooldown) {
+			if(!super.shoot()) {
+				return false;
+			}
 			inCooldown = true;
 			shootBullet(GameObjects.instance.pistolBullets.recycle(PistolBullet), owner.direction, Math.random()*2 - 1);
 		}
+		return false;
 	}
 }
