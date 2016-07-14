@@ -1,19 +1,19 @@
 package;
-import flixel.FlxSprite;
-import flixel.addons.text.FlxTypeText;
-import flixel.input.keyboard.FlxKey;
-import flixel.tile.FlxTilemap;
-import flixel.util.FlxColor;
+
 import flixel.FlxG;
 import flixel.FlxObject;
-import flixel.group.FlxGroup;
+import flixel.FlxSprite;
 import flixel.addons.util.FlxFSM;
+import flixel.addons.util.FlxFSM;
+import flixel.group.FlxGroup;
+import flixel.input.keyboard.FlxKey;
+import spinehaxe.SkeletonData;
 
 /**
  * ...
  * @author TJ
  */
-class Player extends FlxSprite implements LivingThing {
+class Player extends FlxGroup implements LivingThing {
 	
 	private var fsm:FlxFSM<Player>;
 
@@ -57,18 +57,32 @@ class Player extends FlxSprite implements LivingThing {
 	public var nameType:String = "player";
 
 	public var gun: Gun;
+	public var sprite: FlxSprite;
 	
-	override public function new(X:Int, Y:Int) {
-		super(X, Y);
+	override public function new(skeletonData:SkeletonData, X:Int, Y:Int) {
+		// super(skeletonData, X, Y);
+		super();
+
+		// stateData.setMixByName("walk", "jump", 0.2);
+		// stateData.setMixByName("jump", "walk", 0.4);
+		// stateData.setMixByName("jump", "jump", 0.2);
 		
-		loadGraphic("assets/images/dog.png", true, 64, 64);
-		animation.add("run", [0,1,2,3,4,5,6], 15, true);
-		animation.add("idle", [8,9], 3, true);
-		animation.add("jump", [7], 0, false);
-		drag.set(playerDrag, playerDrag);
-		acceleration.y = gravity;
-		maxVelocity.set(xMaxVel, yMaxVel);
-		animation.frameIndex = 8;
+		// state.setAnimationByName(0, "walk", true);
+
+		sprite = new FlxSprite();
+		sprite.x = X;
+		sprite.y = Y - 50;
+		sprite.loadGraphic("assets/images/dog.png", true, 64, 64);
+		sprite.animation.add("run", [0,1,2,3,4,5,6], 15, true);
+		sprite.animation.add("idle", [8,9], 3, true);
+		sprite.animation.add("jump", [7], 0, false);
+		sprite.animation.frameIndex = 8;
+
+
+		sprite.drag.set(playerDrag, playerDrag);
+		sprite.acceleration.y = gravity;
+		sprite.maxVelocity.set(xMaxVel, yMaxVel);
+		add(sprite);
 
 		setNormalHitDimensions();
 		
@@ -93,37 +107,36 @@ class Player extends FlxSprite implements LivingThing {
 	}
 
 	public function springPlayer():Void {
-		velocity.y = jumpSpeed;
+		sprite.velocity.y = jumpSpeed;
 		singleJumped = true;
 		doubleJumped = false;
-		boosted = false;
 	}
 
 	private function setNormalHitDimensions():Void {
-		width = 32;
-		height = 32;
-		offset.set(16, 32);
-		halfWidth = width / 2;
-		halfHeight = height / 2;
+		// width = 32;
+		// height = 32;
+		// offset.set(16, 32);
+		halfWidth = sprite.width / 2;
+		halfHeight = sprite.height / 2;
 	}
 
 	private function setJumpingHitDimensions():Void {
-		width = 32;
-		height = 32;
-		offset.set(16, 24);
-		halfWidth = width / 2;
-		halfHeight = height / 2;
+		// width = 32;
+		// height = 32;
+		// offset.set(16, 24);
+		halfWidth = sprite.width / 2;
+		halfHeight = sprite.height / 2;
 	}
 
 	private function checkPlayerLevelBounds() {
-		if(x < FlxG.camera.minScrollX) {
-			x = FlxG.camera.minScrollX;
-			acceleration.x = 0;
+		if(sprite.x < FlxG.camera.minScrollX) {
+			sprite.x = FlxG.camera.minScrollX;
+			sprite.acceleration.x = 0;
 		}
 
-		if(x > FlxG.camera.minScrollX + FlxG.width - width) {
-			x = FlxG.camera.minScrollX + FlxG.width - width;
-			acceleration.x = 0;
+		if(sprite.x > FlxG.camera.minScrollX + FlxG.width - sprite.width) {
+			sprite.x = FlxG.camera.minScrollX + FlxG.width - sprite.width;
+			sprite.acceleration.x = 0;
 		}
 	}
 	
@@ -138,8 +151,8 @@ class Player extends FlxSprite implements LivingThing {
 	}
 	
 	private function handleFloorCheck():Void {
-		if (this.isTouching(FlxObject.DOWN)) {
-			this.hitFloor();
+		if (sprite.isTouching(FlxObject.DOWN)) {
+			hitFloor();
 			if(!isProne) {
 				setNormalHitDimensions();
 			}
@@ -152,30 +165,30 @@ class Player extends FlxSprite implements LivingThing {
 		} else if(FlxG.keys.anyPressed([DOWN])) {
 			direction = 90;
 		} else {
-			direction = flipX ? 180 : 0;
+			direction = sprite.flipX ? 180 : 0;
 		}
 	}
 	
 	private function handleRunningMovement(elapsed:Float):Void {
-		acceleration.x = 0;
+		sprite.acceleration.x = 0;
 		if (FlxG.keys.anyPressed([RIGHT])) {
-			if (isTouching(FlxObject.DOWN)) {
-				animation.play("run");
+			if (sprite.isTouching(FlxObject.DOWN)) {
+				sprite.animation.play("run");
 			}
-			flipX = false;
-			if(!isTouching(FlxObject.RIGHT) && !onLadder) {
-				acceleration.x += moveSpeed;
+			sprite.flipX = false;
+			if(!sprite.isTouching(FlxObject.RIGHT) && !onLadder) {
+				sprite.acceleration.x += moveSpeed;
 			}
 		} else if (FlxG.keys.anyPressed([LEFT])) {
-			if (isTouching(FlxObject.DOWN)) {
-				animation.play("run");
+			if (sprite.isTouching(FlxObject.DOWN)) {
+				sprite.animation.play("run");
 			}
-			flipX = true;
-			if(!isTouching(FlxObject.LEFT) && !onLadder) {
-				acceleration.x -= moveSpeed;
+			sprite.flipX = true;
+			if(!sprite.isTouching(FlxObject.LEFT) && !onLadder) {
+				sprite.acceleration.x -= moveSpeed;
 			}
-		} else if (isTouching(FlxObject.DOWN)) {
-			animation.play("idle");
+		} else if (sprite.isTouching(FlxObject.DOWN)) {
+			sprite.animation.play("idle");
 		}
 		
 		if (FlxG.keys.anyJustPressed([shootBtn])) {
@@ -191,23 +204,23 @@ class Player extends FlxSprite implements LivingThing {
 
 	public function handleLadderMovement() {
 		if (onLadder) {
-			x = ladderX;
-			acceleration.y = 0;
-			maxVelocity.set(0, yMaxLadderVel);
+			sprite.x = ladderX;
+			sprite.acceleration.y = 0;
+			sprite.maxVelocity.set(0, yMaxLadderVel);
 			if (FlxG.keys.anyPressed([UP]))
 			{
-				velocity.y -= ladderSpeed;
+				sprite.velocity.y -= ladderSpeed;
 			}
 			if (FlxG.keys.anyPressed([DOWN]))
 			{
-				velocity.y += ladderSpeed;
+				sprite.velocity.y += ladderSpeed;
 			}
 		} else {
-			acceleration.y = gravity;
-			if (maxVelocity.x != xCrouchMaxVel) {
-				maxVelocity.set(xMaxVel, yMaxVel);
+			sprite.acceleration.y = gravity;
+			if (sprite.maxVelocity.x != xCrouchMaxVel) {
+				sprite.maxVelocity.set(xMaxVel, yMaxVel);
 			} else {
-				maxVelocity.set(xCrouchMaxVel, yMaxVel);
+				sprite.maxVelocity.set(xCrouchMaxVel, yMaxVel);
 			}
 		}
 	}
@@ -247,19 +260,19 @@ class Player extends FlxSprite implements LivingThing {
 	}
 	
 	public function enterProneState() {
-		scale.y = 0.5;
-		y += height * 0.5;
-		height *= 0.5;
-		halfHeight = height / 2;
-		maxVelocity.set(xCrouchMaxVel, yMaxVel);
+		sprite.scale.y = 0.5;
+		sprite.y += sprite.height * 0.5;
+		sprite.height *= 0.5;
+		halfHeight = sprite.height / 2;
+		sprite.maxVelocity.set(xCrouchMaxVel, yMaxVel);
 		isProne = true;
 	}
 	
 	public function exitProneState() {
-		scale.y = 1;
-		y -= height;
+		sprite.scale.y = 1;
+		sprite.y -= sprite.height;
 		setNormalHitDimensions();
-		maxVelocity.set(xMaxVel, yMaxVel);
+		sprite.maxVelocity.set(xMaxVel, yMaxVel);
 		isProne = false;
 	}
 	
@@ -272,20 +285,20 @@ class Player extends FlxSprite implements LivingThing {
 	public function jumpInVehicle(veh:Vehicle):Void {
 		isInVehicle = true;
 		vehicle = veh;
-		vehicle.setDriver(this);
+		// vehicle.setDriver(this);
 		gun.visible = false; //XXX: Maybe better to kill and recycle
 	}
 
 	public function escapeVehicle():Void {
-		vehicle.setDriver(null);
+		// vehicle.setDriver(null);
 		isInVehicle = false;
 		vehicle = null;
 		singleJumped = true;
 		doubleJumped = true;
 		linearJumped = true;
-		velocity.x = 0;
-		velocity.y = jumpSpeed;
-		acceleration.x = 0;
+		sprite.velocity.x = 0;
+		sprite.velocity.y = jumpSpeed;
+		sprite.acceleration.x = 0;
 		escapingVehicle = true;
 		gun.visible = true; //XXX: Maybe better to kill and recycle
 	}
@@ -306,13 +319,13 @@ class Player extends FlxSprite implements LivingThing {
 
 private class Conditions {
 	public static function isProne(owner:Player):Bool {
-		return owner.isTouching(FlxObject.DOWN) && FlxG.keys.anyPressed([DOWN]);
+		return owner.sprite.isTouching(FlxObject.DOWN) && FlxG.keys.anyPressed([DOWN]);
 	}
 	
 	public static function isStanding(owner:Player):Bool {
-		var xLeftMostPos = Math.floor(owner.x / GameObjects.TILE_WIDTH);
-		var xRightMostPos = Math.floor((owner.x + owner.width) / GameObjects.TILE_WIDTH);
-		var yTile = Math.floor((owner.y) / GameObjects.TILE_HEIGHT);
+		var xLeftMostPos = Math.floor(owner.sprite.x / GameObjects.TILE_WIDTH);
+		var xRightMostPos = Math.floor((owner.sprite.x + owner.sprite.width) / GameObjects.TILE_WIDTH);
+		var yTile = Math.floor((owner.sprite.y) / GameObjects.TILE_HEIGHT);
 		var leftSideTileId = GameObjects.instance.mapData.getTile(xLeftMostPos, yTile-1);
 		var rightSideTileId = GameObjects.instance.mapData.getTile(xRightMostPos, yTile-1);
 		
@@ -365,8 +378,8 @@ private class Death extends FlxFSMState<Player> {
 
 private class DrivingVehicle extends FlxFSMState<Player> {
 	override public function enter(owner:Player, fsm:FlxFSM<Player>):Void {
-		owner.visible = false;
-		owner.allowCollisions = FlxObject.NONE;
+		owner.sprite.visible = false;
+		owner.sprite.allowCollisions = FlxObject.NONE;
 		super.enter(owner, fsm);
 	}
 
@@ -376,8 +389,8 @@ private class DrivingVehicle extends FlxFSMState<Player> {
 	
 	override public function exit(owner:Player):Void {
 		owner.escapeVehicle();
-		owner.visible = true;
-		owner.allowCollisions = FlxObject.ANY;
+		owner.sprite.visible = true;
+		owner.sprite.allowCollisions = FlxObject.ANY;
 		super.exit(owner);
 	}
 }

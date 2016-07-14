@@ -16,6 +16,7 @@ import flixel.addons.util.FlxFSM;
 import flixel.addons.util.FlxFSM;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.addons.editors.spine.FlxSpine;
 
 using flixel.util.FlxSpriteUtil;
 
@@ -178,7 +179,7 @@ class PlayState extends FlxState {
 			switch(type) {
 				case "player":
 					//player = new LinearJumpingPlayer(posX, posY);
-					GameObjects.instance.player = new VariableJumpingPlayer(posX, posY);
+					GameObjects.instance.player = new VariableJumpingPlayer(FlxSpine.readSkeletonData("spineboy", "spineboy", "assets/images/", 0.1), posX, posY);
 					//player = new DoubleJumpingPlayer(posX, posY);
 					add(GameObjects.instance.player);
 				case "ladder":
@@ -213,7 +214,7 @@ class PlayState extends FlxState {
 				case "spike":
 					GameObjects.instance.spikes.recycle(Spike).spawn(posX, posY);
 				case "vehicle":
-					GameObjects.instance.vehicles.recycle(Vehicle).spawn(posX, posY);
+					// GameObjects.instance.vehicles.recycle(Vehicle).spawn(posX, posY);
 				case "spreaderPickup":
 					GameObjects.instance.spreaderPickup.recycle(SpreaderGunPickup).spawn(posX, posY);
 				case "machinegunPickup":
@@ -266,7 +267,7 @@ class PlayState extends FlxState {
 		shadowOverlay.blend = BlendMode.MULTIPLY;
 		add(shadowOverlay);*/
 		
-		FlxG.camera.follow(GameObjects.instance.player, FlxCameraFollowStyle.PLATFORMER, 0.05);
+		FlxG.camera.follow(GameObjects.instance.player.sprite, FlxCameraFollowStyle.PLATFORMER, 0.05);
 		FlxG.camera.targetOffset.set(100, 0);
 		FlxG.camera.maxScrollX = levelBounds.right;
 		FlxG.camera.minScrollX = levelBounds.left;
@@ -281,20 +282,20 @@ class PlayState extends FlxState {
 	}
 	
 	private function handleFallThrough(Tile:FlxObject, Object:FlxObject):Void {
-		if (Object == GameObjects.instance.player) {
+		if (Object == GameObjects.instance.player.sprite) {
 			var _pl = cast(Object, Player);
 			
 			if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([_pl.jumpBtn])) {
 				_pl.fallThroughObj = Tile;
 				_pl.fallingThrough = true;
 			}
-		} else if(Object == GameObjects.instance.player.vehicle) {
-			var _veh = cast(Object, Vehicle);
+		// } else if(Object == GameObjects.instance.player.vehicle) {
+		// 	var _veh = cast(Object, Vehicle);
 			
-			if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([GameObjects.instance.player.jumpBtn])) {
-				_veh.fallThroughObj = Tile;
-				_veh.fallingThrough = true;
-			}
+		// 	if (FlxG.keys.anyPressed([DOWN]) && FlxG.keys.anyJustPressed([GameObjects.instance.player.jumpBtn])) {
+		// 		_veh.fallThroughObj = Tile;
+		// 		_veh.fallingThrough = true;
+		// 	}
 		}
 	}
 	
@@ -310,8 +311,8 @@ class PlayState extends FlxState {
 			var radius = 200 - (50 * i);
 		
 			shadowOverlay.drawCircle(
-				GameObjects.instance.player.x + (GameObjects.instance.player.width/2) + FlxG.random.float( -.6, .6),
-				GameObjects.instance.player.y + (GameObjects.instance.player.height/2) + FlxG.random.float( -.6, .6),
+				GameObjects.instance.player.sprite.x + (GameObjects.instance.player.sprite.width/2) + FlxG.random.float( -.6, .6),
+				GameObjects.instance.player.sprite.y + (GameObjects.instance.player.sprite.height/2) + FlxG.random.float( -.6, .6),
 				(FlxG.random.bool(5) ? radius : radius + studderEffect), col);
 			/*var size = (FlxG.random.bool(5) ? radius : radius + 0.5);
 			shadowOverlay.drawRect(
@@ -366,9 +367,9 @@ class PlayState extends FlxState {
 	}
 	
 	private function pickupCollision(thing:GunPickup, _player:Player):Void {
-		if(cast(thing, FlxBasic).alive && _player.alive) {
-			thing.pickup(_player);
-		}
+		// if(cast(thing, FlxBasic).alive && _player.alive) {
+		// 	thing.pickup(_player);
+		// }
 	}
 	
 	public function updateGamingState(elapsed):Void {
@@ -413,53 +414,53 @@ class PlayState extends FlxState {
 
 		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.enemies, enemyCollision);
 
-		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.vehicles, function(_pl:Player, veh:Vehicle) {
-		}, function(_pl:Player, veh:Vehicle) {
-			if(!_pl.escapingVehicle &&
-				_pl.y + _pl.halfHeight < veh.y && 
-				_pl.velocity.y > 0 &&
-				Math.abs((_pl.x + _pl.halfWidth) - (veh.x + veh.halfWidth)) < _pl.halfWidth) {
-				_pl.jumpInVehicle(veh);
-			}
-			return false;
-		});
+		// FlxG.overlap(GameObjects.instance.player, GameObjects.instance.vehicles, function(_pl:Player, veh:Vehicle) {
+		// }, function(_pl:Player, veh:Vehicle) {
+		// 	if(!_pl.escapingVehicle &&
+		// 		_pl.y + _pl.halfHeight < veh.y && 
+		// 		_pl.velocity.y > 0 &&
+		// 		Math.abs((_pl.x + _pl.halfWidth) - (veh.x + veh.halfWidth)) < _pl.halfWidth) {
+		// 		_pl.jumpInVehicle(veh);
+		// 	}
+		// 	return false;
+		// });
 		
 
 		///XXX: DRY these two functions up//////////////////////////////////////////////////
 		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.movingPlatforms, function(_pl:Player, obj:MovingPlatform) {
-			handleFallThrough(obj, _pl);
+			handleFallThrough(obj, _pl.sprite);
 			
-			if (_pl.isTouching(FlxObject.DOWN)) {
+			if (_pl.sprite.isTouching(FlxObject.DOWN)) {
 				_pl.hitFloor();
 			}
 		}, function(_pl:Player, obj:MovingPlatform) {
 			
-			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.y) {
+			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.sprite.y) {
 				_pl.fallThroughObj = null;
 				_pl.fallingThrough = false;
 			} else if (_pl.fallingThrough) {
 				return false;
 			}
 			
-			return FlxObject.separate(_pl, obj);
+			return FlxObject.separate(_pl.sprite, obj);
 		});
-		FlxG.overlap(GameObjects.instance.vehicles, GameObjects.instance.movingPlatforms, function(veh:Vehicle, obj:MovingPlatform) {
-			handleFallThrough(obj, veh);
+		// FlxG.overlap(GameObjects.instance.vehicles, GameObjects.instance.movingPlatforms, function(veh:Vehicle, obj:MovingPlatform) {
+		// 	handleFallThrough(obj, veh);
 			
-			if (veh.isTouching(FlxObject.DOWN)) {
-				veh.hitFloor();
-			}
-		}, function(veh:Vehicle, obj:MovingPlatform) {
+		// 	if (veh.isTouching(FlxObject.DOWN)) {
+		// 		veh.hitFloor();
+		// 	}
+		// }, function(veh:Vehicle, obj:MovingPlatform) {
 			
-			if (veh.fallThroughObj != null && veh.fallThroughObj.y < veh.y) {
-				veh.fallThroughObj = null;
-				veh.fallingThrough = false;
-			} else if (veh.fallingThrough) {
-				return false;
-			}
+		// 	if (veh.fallThroughObj != null && veh.fallThroughObj.y < veh.y) {
+		// 		veh.fallThroughObj = null;
+		// 		veh.fallingThrough = false;
+		// 	} else if (veh.fallingThrough) {
+		// 		return false;
+		// 	}
 			
-			return FlxObject.separate(veh, obj);
-		});
+		// 	return FlxObject.separate(veh, obj);
+		// });
 		////////////////////////////////////////////////////////////////////////////////////////
 		///XXX: DRY these two functions up//////////////////////////////////////////////////
 		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.disappearingPlatforms, function(_pl:Player, obj:DisappearingPlatform) {
@@ -470,10 +471,10 @@ class PlayState extends FlxState {
 				return false;
 			}
 			
-			return FlxObject.separate(_pl, obj);
+			return FlxObject.separate(_pl.sprite, obj);
 		});
 		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.springyFloors, function(_pl:Player, obj:SpringyFloor) {
-			if(_pl.velocity.y > 0 && (_pl.y+_pl.halfHeight) < (obj.y)) {
+			if(_pl.sprite.velocity.y > 0 && (_pl.sprite.y+_pl.halfHeight) < (obj.y)) {
 				_pl.springPlayer();
 			}
 		});
@@ -482,8 +483,8 @@ class PlayState extends FlxState {
 		
 		var onLadder = false;
 		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.ladders, function(_pl:Player, obj:Ladder) {}, function(_pl:Player, obj:Ladder) {
-			if (FlxG.keys.anyPressed([UP]) && (_pl.y+_pl.height) < obj.y && obj.isHead) {
-				return FlxObject.separate(_pl, obj);
+			if (FlxG.keys.anyPressed([UP]) && (_pl.sprite.y+_pl.sprite.height) < obj.y && obj.isHead) {
+				return FlxObject.separate(_pl.sprite, obj);
 			} else if (FlxG.keys.anyPressed([DOWN, UP]) || _pl.getLadderState()) {
 				_pl.setLadderState(true, obj.x);
 				onLadder = true;
@@ -491,7 +492,7 @@ class PlayState extends FlxState {
 			} else {
 				if (obj.isHead) 
 				{
-					return FlxObject.separate(_pl, obj);
+					return FlxObject.separate(_pl.sprite, obj);
 				}
 				else
 				{
@@ -501,7 +502,7 @@ class PlayState extends FlxState {
 		});
 		
 		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.killPits, function(_pl:Player, killPit:KillPit) {
-			if (_pl.y > killPit.y) {
+			if (_pl.sprite.y > killPit.y) {
 				_pl.kill();
 			}
 		});
@@ -511,22 +512,22 @@ class PlayState extends FlxState {
 		});
 		
 		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.exits, function(_pl:Player, exit:Exit) {
-			if (Math.abs(_pl.x - exit.x) < 5) {
+			if (Math.abs(_pl.sprite.x - exit.x) < 5) {
 				currentState = OUTRO;
 			}
 		});
 				
-		GameObjects.instance.mapData.overlapsWithCallback(GameObjects.instance.player, function(_tile: FlxObject, _player: FlxObject) {
-			var castedPlayer = cast(_player, Player);
+		GameObjects.instance.mapData.overlapsWithCallback(GameObjects.instance.player.sprite, function(_tile: FlxObject, _player: FlxObject) {
+			// var castedPlayer = cast(_player, Player);
 			
-			if (castedPlayer.fallThroughObj != null && castedPlayer.fallThroughObj.y < castedPlayer.y) {
-				castedPlayer.fallThroughObj = null;
-				castedPlayer.fallingThrough = false;
-			} else if (castedPlayer.fallingThrough) {
+			if (GameObjects.instance.player.fallThroughObj != null && GameObjects.instance.player.fallThroughObj.y < GameObjects.instance.player.sprite.y) {
+				GameObjects.instance.player.fallThroughObj = null;
+				GameObjects.instance.player.fallingThrough = false;
+			} else if (GameObjects.instance.player.fallingThrough) {
 				return false;
 			}
 			
-			return FlxObject.separate(_tile, castedPlayer);
+			return FlxObject.separate(_tile, GameObjects.instance.player.sprite);
 		});
 		GameObjects.instance.enemies.forEach(function(enemy:BasicEnemy) {
 			GameObjects.instance.mapData.overlapsWithCallback(enemy, FlxObject.separate);
@@ -534,20 +535,20 @@ class PlayState extends FlxState {
 		GameObjects.instance.bosses.forEach(function(boss:Boss) {
 			GameObjects.instance.mapData.overlapsWithCallback(boss.body, FlxObject.separate);
 		});
-		GameObjects.instance.vehicles.forEach(function(vehicle:Vehicle) {
-			GameObjects.instance.mapData.overlapsWithCallback(vehicle, function(_tile: FlxObject, veh: FlxObject) {
-				var _veh = cast(veh, Vehicle);
+		// GameObjects.instance.vehicles.forEach(function(vehicle:Vehicle) {
+		// 	GameObjects.instance.mapData.overlapsWithCallback(vehicle, function(_tile: FlxObject, veh: FlxObject) {
+		// 		var _veh = cast(veh, Vehicle);
 				
-				if (_veh.fallThroughObj != null && _veh.fallThroughObj.y < _veh.y) {
-					_veh.fallThroughObj = null;
-					_veh.fallingThrough = false;
-				} else if (_veh.fallingThrough) {
-					return false;
-				}
+		// 		if (_veh.fallThroughObj != null && _veh.fallThroughObj.y < _veh.y) {
+		// 			_veh.fallThroughObj = null;
+		// 			_veh.fallingThrough = false;
+		// 		} else if (_veh.fallingThrough) {
+		// 			return false;
+		// 		}
 				
-				return FlxObject.separate(_tile, _veh);
-			});
-		});
+		// 		return FlxObject.separate(_tile, _veh);
+		// 	});
+		// });
 		
 		if (!onLadder) {
 			GameObjects.instance.player.setLadderState(false);

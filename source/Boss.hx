@@ -92,7 +92,7 @@ class Boss extends FlxNestedSprite implements LivingThing {
 
 	private function unlockCamera() {
 		if(FlxG.camera.target == offsetObject) {
-			FlxG.camera.follow(GameObjects.instance.player, FlxCameraFollowStyle.PLATFORMER, 0.1);
+			FlxG.camera.follow(GameObjects.instance.player.sprite, FlxCameraFollowStyle.PLATFORMER, 0.1);
 			FlxG.camera.targetOffset.set(100, 0);
 		}
 	}

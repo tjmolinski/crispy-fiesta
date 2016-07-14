@@ -33,140 +33,140 @@ class Vehicle extends FlxSprite implements LivingThing {
 	private var blowingUpTicks:Int = 0;
 	private var blowingUpTime:Int = 100;
 
-	override public function new() {
-		super();
+	// override public function new() {
+	// 	super();
 
-		makeGraphic(64, 32, FlxColor.MAGENTA);
+	// 	makeGraphic(64, 32, FlxColor.MAGENTA);
 
-		drag.set(vehicleDrag, vehicleDrag);
-		acceleration.set(0, gravity);
-		maxVelocity.set(xMaxVel, yMaxVel);
+	// 	drag.set(vehicleDrag, vehicleDrag);
+	// 	acceleration.set(0, gravity);
+	// 	maxVelocity.set(xMaxVel, yMaxVel);
 
-		halfWidth = width / 2;
-		halfHeight = height / 2;
-	}
+	// 	halfWidth = width / 2;
+	// 	halfHeight = height / 2;
+	// }
 	
-	override public function update(elapsed: Float):Void {
-		if(!alive) {
-			return;
-		}
+	// override public function update(elapsed: Float):Void {
+	// 	if(!alive) {
+	// 		return;
+	// 	}
 
-		handleMovement(elapsed);
+	// 	handleMovement(elapsed);
 
-		if(isBlowingUp) {
-			if(++blowingUpTicks > blowingUpTime) {
-				if(driver != null) {
-					driver.kill();
-					driver = null;
-				}
-				kill();
-			} else {
-				visible = !visible;
-			}
-		}
+	// 	if(isBlowingUp) {
+	// 		if(++blowingUpTicks > blowingUpTime) {
+	// 			if(driver != null) {
+	// 				driver.kill();
+	// 				driver = null;
+	// 			}
+	// 			kill();
+	// 		} else {
+	// 			visible = !visible;
+	// 		}
+	// 	}
 
-		if(driver != null) {
-			checkVehicleLevelBounds();
-		}
+	// 	if(driver != null) {
+	// 		checkVehicleLevelBounds();
+	// 	}
 
-		super.update(elapsed);
-	}
+	// 	super.update(elapsed);
+	// }
 
-	private function checkVehicleLevelBounds() {
-		if(x < FlxG.camera.minScrollX) {
-			x = FlxG.camera.minScrollX;
-			acceleration.x = 0;
-		}
+	// private function checkVehicleLevelBounds() {
+	// 	if(x < FlxG.camera.minScrollX) {
+	// 		x = FlxG.camera.minScrollX;
+	// 		acceleration.x = 0;
+	// 	}
 
-		if(x > FlxG.camera.minScrollX + FlxG.width - width) {
-			x = FlxG.camera.minScrollX + FlxG.width - width;
-			acceleration.x = 0;
-		}
-	}
+	// 	if(x > FlxG.camera.minScrollX + FlxG.width - width) {
+	// 		x = FlxG.camera.minScrollX + FlxG.width - width;
+	// 		acceleration.x = 0;
+	// 	}
+	// }
 	
-	public function spawn(posX: Float, posY: Float) {
-		super.reset(posX, posY);
-	}
+	// public function spawn(posX: Float, posY: Float) {
+	// 	super.reset(posX, posY);
+	// }
 
-	public function handleMovement(elapsed: Float):Void {
-		acceleration.x = 0;
+	// public function handleMovement(elapsed: Float):Void {
+	// 	acceleration.x = 0;
 
-		if(driver == null) {
-			return;
-		}
+	// 	if(driver == null) {
+	// 		return;
+	// 	}
 
-		driver.x = x + halfWidth - driver.halfWidth;
-		driver.y = y;
-		driver.flipX = flipX;
+	// 	driver.x = x + halfWidth - driver.halfWidth;
+	// 	driver.y = y;
+	// 	driver.flipX = flipX;
 
-		if (this.isTouching(FlxObject.DOWN)) {
-			hitFloor();
-		}
+	// 	if (this.isTouching(FlxObject.DOWN)) {
+	// 		hitFloor();
+	// 	}
 
-		driver.handleDirection();
+	// 	driver.handleDirection();
 		
-		if(fallingThrough) {
-			return;
-		}
+	// 	if(fallingThrough) {
+	// 		return;
+	// 	}
 
 
-		if(!isBlowingUp) {
-			if (FlxG.keys.anyPressed([RIGHT])) {
-				flipX = false;
-				if(!isTouching(FlxObject.RIGHT))
-				{
-				acceleration.x += moveSpeed;
-				}
-			} else if (FlxG.keys.anyPressed([LEFT])) {
-				flipX = true;
-				if(!isTouching(FlxObject.LEFT)) {
-					acceleration.x -= moveSpeed;
-				}
-			}
+	// 	if(!isBlowingUp) {
+	// 		if (FlxG.keys.anyPressed([RIGHT])) {
+	// 			flipX = false;
+	// 			if(!isTouching(FlxObject.RIGHT))
+	// 			{
+	// 			acceleration.x += moveSpeed;
+	// 			}
+	// 		} else if (FlxG.keys.anyPressed([LEFT])) {
+	// 			flipX = true;
+	// 			if(!isTouching(FlxObject.LEFT)) {
+	// 				acceleration.x -= moveSpeed;
+	// 			}
+	// 		}
 
-			if (FlxG.keys.anyJustPressed([driver.jumpBtn])) {
-				if (!singleJumped) {
-					singleJumped = true;
-					velocity.y = jumpSpeed;
-				} else if (singleJumped && !doubleJumped) {
-					doubleJumped = true;
-					velocity.y = jumpSpeed;
-				}
-			}
+	// 		if (FlxG.keys.anyJustPressed([driver.jumpBtn])) {
+	// 			if (!singleJumped) {
+	// 				singleJumped = true;
+	// 				velocity.y = jumpSpeed;
+	// 			} else if (singleJumped && !doubleJumped) {
+	// 				doubleJumped = true;
+	// 				velocity.y = jumpSpeed;
+	// 			}
+	// 		}
 			
-			if (FlxG.keys.anyJustPressed([driver.shootBtn])) {
-				GameObjects.instance.pistolBullets.recycle(PistolBullet).fireBullet(x+halfWidth, y+halfHeight, driver.direction, this);
-			}
-		}
-	}
+	// 		if (FlxG.keys.anyJustPressed([driver.shootBtn])) {
+	// 			GameObjects.instance.pistolBullets.recycle(PistolBullet).fireBullet(x+halfWidth, y+halfHeight, driver.direction, this);
+	// 		}
+	// 	}
+	// }
 	
-	public function hitFloor():Void {
-		singleJumped = false;
-		doubleJumped = false;
-	}
+	// public function hitFloor():Void {
+	// 	singleJumped = false;
+	// 	doubleJumped = false;
+	// }
 
-	public function setDriver(_driver:Player):Void {
-		driver = _driver;
-	}
+	// public function setDriver(_driver:Player):Void {
+	// 	driver = _driver;
+	// }
 
-	public function diverEscaped():Void {
-		driver = null;
-	}
+	// public function diverEscaped():Void {
+	// 	driver = null;
+	// }
 
 	public function hitByBullet(bullet:Bullet): Void {
-		if(bullet.owner.nameType == "player") {
-			return;
-		}
+	// 	if(bullet.owner.nameType == "player") {
+	// 		return;
+		// }
 
-		bullet.kill();
-		if(--healthPoints <= 0 && !isBlowingUp) {
-			isBlowingUp = true;
-		}
+	// 	bullet.kill();
+	// 	if(--healthPoints <= 0 && !isBlowingUp) {
+	// 		isBlowingUp = true;
+	// 	}
 	}
 	
 	public function hitByLaser(laser: Laser):Void {
-		if(!isBlowingUp) {
-			isBlowingUp = true;
-		}
+	// 	if(!isBlowingUp) {
+	// 		isBlowingUp = true;
+	// 	}
 	}
 }

@@ -92,19 +92,19 @@ class BasicEnemy extends FlxSprite implements LivingThing
 
 private class Conditions {
 	public static function seeEnemy(Owner:BasicEnemy):Bool {
-		if (GameObjects.instance.player.x - Owner.x < 0 && !Owner.flipX) {
+		if (GameObjects.instance.player.sprite.x - Owner.x < 0 && !Owner.flipX) {
 			return false;
 		}
 		
-		if (GameObjects.instance.player.x - Owner.x > 0 && Owner.flipX) {
+		if (GameObjects.instance.player.sprite.x - Owner.x > 0 && Owner.flipX) {
 			return false;
 		}
 		
-		return GameObjects.instance.mapData.ray(Owner.getMidpoint(), GameObjects.instance.player.getMidpoint());
+		return GameObjects.instance.mapData.ray(Owner.getMidpoint(), GameObjects.instance.player.sprite.getMidpoint());
 	}
 	
 	public static function lostEnemy(Owner:BasicEnemy):Bool {
-		return !GameObjects.instance.mapData.ray(Owner.getMidpoint(), GameObjects.instance.player.getMidpoint());
+		return !GameObjects.instance.mapData.ray(Owner.getMidpoint(), GameObjects.instance.player.sprite.getMidpoint());
 	}
 }
 

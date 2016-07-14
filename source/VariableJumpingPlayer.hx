@@ -35,10 +35,10 @@ class VariableJumpingPlayer extends Player {
 	private function boosting() {
 		switch(lastBoostBtn) {
 			case FlxKey.RIGHT:
-				velocity.x = horizontalBoostSpeed;
+				sprite.velocity.x = horizontalBoostSpeed;
 
 			case FlxKey.LEFT:
-				velocity.x = -horizontalBoostSpeed;
+				sprite.velocity.x = -horizontalBoostSpeed;
 
 			default:
 		}
@@ -51,12 +51,12 @@ class VariableJumpingPlayer extends Player {
 		
 		if (FlxG.keys.anyPressed([jumpBtn]) && (!singleJumped || !doubleJumped) && !jumpJammer) {
 			setJumpingHitDimensions();
-			animation.play("jump");
+			sprite.animation.play("jump");
 			if (FlxG.keys.anyJustPressed([jumpBtn])) {
 				setLadderState(false);
-				velocity.y = jumpSpeed;
+				sprite.velocity.y = jumpSpeed;
 			} else {
-				velocity.y += jumpHoldAdder;
+				sprite.velocity.y += jumpHoldAdder;
 				if (holdJumpBuffer > holdJumpTime) {
 					jumpJammer = true;
 				} else {
@@ -124,19 +124,19 @@ class VariableJumpingPlayer extends Player {
 		switch(key) {
 			case FlxKey.UP:
 				boosted = true;
-				velocity.y = verticalBoostSpeed;
+				sprite.velocity.y = verticalBoostSpeed;
 
 			case FlxKey.RIGHT:
 				boosted = true;
-				velocity.y = horizontalLiftSpeed;
+				sprite.velocity.y = horizontalLiftSpeed;
 
 			case FlxKey.LEFT:
 				boosted = true;
-				velocity.y = horizontalLiftSpeed;
+				sprite.velocity.y = horizontalLiftSpeed;
 
 			case FlxKey.DOWN:
 				boosted = true;
-				velocity.y = -verticalBoostSpeed;
+				sprite.velocity.y = -verticalBoostSpeed;
 
 			default:
 		}
