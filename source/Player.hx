@@ -7,6 +7,7 @@ import flixel.addons.util.FlxFSM;
 import flixel.addons.util.FlxFSM;
 import flixel.group.FlxGroup;
 import flixel.input.keyboard.FlxKey;
+import flixel.addons.editors.spine.FlxSpine;
 import spinehaxe.SkeletonData;
 
 /**
@@ -57,27 +58,32 @@ class Player extends FlxGroup implements LivingThing {
 	public var nameType:String = "player";
 
 	public var gun: Gun;
-	public var sprite: FlxSprite;
+	public var sprite: NestedSprite;
+	public var spine: FlxSpine;
 	
 	override public function new(skeletonData:SkeletonData, X:Int, Y:Int) {
 		// super(skeletonData, X, Y);
 		super();
 
-		// stateData.setMixByName("walk", "jump", 0.2);
-		// stateData.setMixByName("jump", "walk", 0.4);
-		// stateData.setMixByName("jump", "jump", 0.2);
+		spine = new FlxSpine(skeletonData, X, Y);
+		spine.renderMeshes = true;
+		spine.stateData.setMixByName("walk", "jump", 0.2);
+		spine.stateData.setMixByName("jump", "walk", 0.4);
+		spine.stateData.setMixByName("jump", "jump", 0.2);
 		
-		// state.setAnimationByName(0, "walk", true);
+		spine.state.setAnimationByName(0, "walk", true);
+		add(spine);
 
-		sprite = new FlxSprite();
-		sprite.x = X;
+		sprite = new NestedSprite(this);
+		sprite.x = X + 50;
 		sprite.y = Y - 50;
-		sprite.loadGraphic("assets/images/dog.png", true, 64, 64);
-		sprite.animation.add("run", [0,1,2,3,4,5,6], 15, true);
-		sprite.animation.add("idle", [8,9], 3, true);
-		sprite.animation.add("jump", [7], 0, false);
-		sprite.animation.frameIndex = 8;
-
+		sprite.width = 32;
+		sprite.height = 64;
+		// sprite.loadGraphic("assets/images/dog.png", true, 64, 64);
+		// sprite.animation.add("run", [0,1,2,3,4,5,6], 15, true);
+		// sprite.animation.add("idle", [8,9], 3, true);
+		// sprite.animation.add("jump", [7], 0, false);
+		// sprite.animation.frameIndex = 8;
 
 		sprite.drag.set(playerDrag, playerDrag);
 		sprite.acceleration.y = gravity;
@@ -104,6 +110,9 @@ class Player extends FlxGroup implements LivingThing {
 		checkPlayerLevelBounds();
 
 		super.update(elapsed);
+
+		spine.x = sprite.x + 15;
+		spine.y = sprite.y + 61;
 	}
 
 	public function springPlayer():Void {
@@ -113,17 +122,17 @@ class Player extends FlxGroup implements LivingThing {
 	}
 
 	private function setNormalHitDimensions():Void {
-		// width = 32;
-		// height = 32;
-		// offset.set(16, 32);
+		// sprite.width = 32;
+		// sprite.height = 32;
+		// sprite.offset.set(16, 32);
 		halfWidth = sprite.width / 2;
 		halfHeight = sprite.height / 2;
 	}
 
 	private function setJumpingHitDimensions():Void {
-		// width = 32;
-		// height = 32;
-		// offset.set(16, 24);
+		// sprite.width = 32;
+		// sprite.height = 32;
+		// sprite.offset.set(16, 24);
 		halfWidth = sprite.width / 2;
 		halfHeight = sprite.height / 2;
 	}
@@ -165,7 +174,7 @@ class Player extends FlxGroup implements LivingThing {
 		} else if(FlxG.keys.anyPressed([DOWN])) {
 			direction = 90;
 		} else {
-			direction = sprite.flipX ? 180 : 0;
+			direction = spine.flipX ? 180 : 0;
 		}
 	}
 	
@@ -173,22 +182,22 @@ class Player extends FlxGroup implements LivingThing {
 		sprite.acceleration.x = 0;
 		if (FlxG.keys.anyPressed([RIGHT])) {
 			if (sprite.isTouching(FlxObject.DOWN)) {
-				sprite.animation.play("run");
+				// sprite.animation.play("run");
 			}
-			sprite.flipX = false;
+			spine.flipX = false;
 			if(!sprite.isTouching(FlxObject.RIGHT) && !onLadder) {
 				sprite.acceleration.x += moveSpeed;
 			}
 		} else if (FlxG.keys.anyPressed([LEFT])) {
 			if (sprite.isTouching(FlxObject.DOWN)) {
-				sprite.animation.play("run");
+				// sprite.animation.play("run");
 			}
-			sprite.flipX = true;
+			spine.flipX = true;
 			if(!sprite.isTouching(FlxObject.LEFT) && !onLadder) {
 				sprite.acceleration.x -= moveSpeed;
 			}
 		} else if (sprite.isTouching(FlxObject.DOWN)) {
-			sprite.animation.play("idle");
+			// sprite.animation.play("idle");
 		}
 		
 		if (FlxG.keys.anyJustPressed([shootBtn])) {
@@ -260,7 +269,6 @@ class Player extends FlxGroup implements LivingThing {
 	}
 	
 	public function enterProneState() {
-		sprite.scale.y = 0.5;
 		sprite.y += sprite.height * 0.5;
 		sprite.height *= 0.5;
 		halfHeight = sprite.height / 2;
@@ -269,9 +277,9 @@ class Player extends FlxGroup implements LivingThing {
 	}
 	
 	public function exitProneState() {
-		sprite.scale.y = 1;
 		sprite.y -= sprite.height;
-		setNormalHitDimensions();
+		sprite.height *= 2;
+		halfHeight = sprite.height / 2;
 		sprite.maxVelocity.set(xMaxVel, yMaxVel);
 		isProne = false;
 	}

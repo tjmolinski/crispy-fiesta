@@ -75,7 +75,7 @@ class Gun extends FlxSprite {
 		super.kill();
 	}
 	
-	public function giveGun(_owner:Dynamic):Void {
+	public function giveGun(_owner:Player):Void {
 		super.reset(_owner.sprite.x, _owner.sprite.y);
 		owner = _owner;
 		owner.giveGun(this);

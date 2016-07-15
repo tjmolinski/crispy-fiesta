@@ -17,6 +17,7 @@ import flixel.addons.util.FlxFSM;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.addons.editors.spine.FlxSpine;
+import spinehaxe.SkeletonData;
 
 using flixel.util.FlxSpriteUtil;
 
@@ -343,6 +344,15 @@ class PlayState extends FlxState {
 		//message.x = GameObjects.instance.player.x - (message.width/2);
 		//message.y = GameObjects.instance.player.y - 100;
 	}
+
+	private function playerBulletCollision(bullet:Bullet, thing:NestedSprite):Void {
+		var pl = cast(thing.parent, Player);
+		if(pl.nameType == "player" && pl.alive) {
+			if (pl.nameType != bullet.owner.nameType) {
+				pl.hitByBullet(bullet);
+			}
+		}
+	}
 	
 	private function bulletCollision(bullet:Bullet, thing:LivingThing):Void {
 		if(cast(thing, FlxBasic).alive) {
@@ -360,16 +370,16 @@ class PlayState extends FlxState {
 		}
 	}
 	
-	private function enemyCollision(_player:Player, thing:LivingThing):Void {
-		if(cast(thing, FlxBasic).alive && _player.alive) {
-			_player.overlappingEnemy(thing);
-		}
-	}
+	// private function enemyCollision(_player:Player, thing:LivingThing):Void {
+	// 	if(cast(thing, FlxBasic).alive && _player.alive) {
+	// 		_player.overlappingEnemy(thing);
+	// 	}
+	// }
 	
-	private function pickupCollision(thing:GunPickup, _player:Player):Void {
-		// if(cast(thing, FlxBasic).alive && _player.alive) {
-		// 	thing.pickup(_player);
-		// }
+	private function pickupCollision(thing:GunPickup, _player:NestedSprite):Void {
+		if(cast(thing, FlxBasic).alive && _player.parent.alive) {
+			thing.pickup(cast(_player.parent, Player));
+		}
 	}
 	
 	public function updateGamingState(elapsed):Void {
@@ -378,13 +388,13 @@ class PlayState extends FlxState {
 		//TODO: Remove this and make the hud render to camera from a different position
 		ammoText.x = FlxG.camera.scroll.x;
 
-		FlxG.overlap(GameObjects.instance.pistolBullets, GameObjects.instance.player, bulletCollision);
+		FlxG.overlap(GameObjects.instance.pistolBullets, GameObjects.instance.player, playerBulletCollision);
 		FlxG.overlap(GameObjects.instance.pistolBullets, GameObjects.instance.enemies, bulletCollision);
 		FlxG.overlap(GameObjects.instance.pistolBullets, GameObjects.instance.vehicles, bulletCollision);
-		FlxG.overlap(GameObjects.instance.flameBullets, GameObjects.instance.player, bulletCollision);
+		FlxG.overlap(GameObjects.instance.flameBullets, GameObjects.instance.player, playerBulletCollision);
 		FlxG.overlap(GameObjects.instance.flameBullets, GameObjects.instance.enemies, bulletCollision);
 		FlxG.overlap(GameObjects.instance.flameBullets, GameObjects.instance.vehicles, bulletCollision);
-		FlxG.overlap(GameObjects.instance.rawketBullets, GameObjects.instance.player, bulletCollision);
+		FlxG.overlap(GameObjects.instance.rawketBullets, GameObjects.instance.player, playerBulletCollision);
 		FlxG.overlap(GameObjects.instance.rawketBullets, GameObjects.instance.enemies, bulletCollision);
 		FlxG.overlap(GameObjects.instance.rawketBullets, GameObjects.instance.vehicles, bulletCollision);
 
@@ -407,12 +417,12 @@ class PlayState extends FlxState {
 			FlxG.overlap(GameObjects.instance.rawketBullets, boss.weakSpot, function(bullet:Bullet, thing:FlxSprite) {
 				bulletCollision(bullet, boss);
 			});
-			FlxG.overlap(GameObjects.instance.player, boss.body, function(_pl:Player, thing:FlxSprite) {
-				enemyCollision(_pl, boss);
-			});
+			// FlxG.overlap(GameObjects.instance.player, boss.body, function(_pl:Player, thing:FlxSprite) {
+			// 	enemyCollision(_pl, boss);
+			// });
 		});
 
-		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.enemies, enemyCollision);
+		// FlxG.overlap(GameObjects.instance.player, GameObjects.instance.enemies, enemyCollision);
 
 		// FlxG.overlap(GameObjects.instance.player, GameObjects.instance.vehicles, function(_pl:Player, veh:Vehicle) {
 		// }, function(_pl:Player, veh:Vehicle) {
@@ -427,22 +437,22 @@ class PlayState extends FlxState {
 		
 
 		///XXX: DRY these two functions up//////////////////////////////////////////////////
-		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.movingPlatforms, function(_pl:Player, obj:MovingPlatform) {
-			handleFallThrough(obj, _pl.sprite);
+		FlxG.overlap(GameObjects.instance.player, GameObjects.instance.movingPlatforms, function(_pl:Dynamic, obj:MovingPlatform) {
+			handleFallThrough(obj, _pl.parent.sprite);
 			
-			if (_pl.sprite.isTouching(FlxObject.DOWN)) {
-				_pl.hitFloor();
+			if (_pl.parent.sprite.isTouching(FlxObject.DOWN)) {
+				_pl.parent.hitFloor();
 			}
-		}, function(_pl:Player, obj:MovingPlatform) {
+		}, function(_pl:Dynamic, obj:MovingPlatform) {
 			
-			if (_pl.fallThroughObj != null && _pl.fallThroughObj.y < _pl.sprite.y) {
-				_pl.fallThroughObj = null;
-				_pl.fallingThrough = false;
-			} else if (_pl.fallingThrough) {
+			if (_pl.parent.fallThroughObj != null && _pl.parent.fallThroughObj.y < _pl.parent.sprite.y) {
+				_pl.parent.fallThroughObj = null;
+				_pl.parent.fallingThrough = false;
+			} else if (_pl.parent.fallingThrough) {
 				return false;
 			}
 			
-			return FlxObject.separate(_pl.sprite, obj);
+			return FlxObject.separate(_pl.parent.sprite, obj);
 		});
 		// FlxG.overlap(GameObjects.instance.vehicles, GameObjects.instance.movingPlatforms, function(veh:Vehicle, obj:MovingPlatform) {
 		// 	handleFallThrough(obj, veh);
